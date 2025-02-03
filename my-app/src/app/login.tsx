@@ -30,17 +30,23 @@ export function LoginForm({ className, ...props }: { className?: string }) {
     setError("");
     setMessage("");
 
-    const url = "INSERT BACKEND ENDPOINT TO CHECK LOGIN CREDENTIALS HERE";
+    const url = "http://localhost:8080/api/verify-user";
 
     try {
-      const response = await axios.post(url, {
-        username,
-        password,
+      const response = await fetch(url, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          username,
+          password,
+        }),
       });
 
-      if (response.status === 200) {
-        const { role } = response.data; // Extract role from response
-
+      if (response.ok) {
+        const data = await response.json(); // ✅ Parse response body as JSON
+        const { role } = data; // ✅ Now you can extract role
 
         setMessage("Login successful!");
         //localStorage.setItem("username", username);
