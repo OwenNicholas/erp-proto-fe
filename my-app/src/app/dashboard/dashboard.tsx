@@ -1,24 +1,26 @@
-"use client"
-import { AppSidebar } from "@/components/app-sidebars"
+"use client";
+import { useState } from "react";
+import { AppSidebar } from "@/components/app-sidebars";
 import {
   Breadcrumb,
   BreadcrumbItem,
-  BreadcrumbLink,
   BreadcrumbList,
   BreadcrumbPage,
   BreadcrumbSeparator,
-} from "@/components/ui/breadcrumb"
-import { Separator } from "@/components/ui/separator"
+} from "@/components/ui/breadcrumb";
+import { Separator } from "@/components/ui/separator";
 import {
   SidebarInset,
   SidebarProvider,
   SidebarTrigger,
-} from "@/components/ui/sidebar"
+} from "@/components/ui/sidebar";
 
 export default function DashboardPage() {
+  const [activeSection, setActiveSection] = useState("Dashboard"); // Track selected submenu
+
   return (
     <SidebarProvider>
-      <AppSidebar />
+      <AppSidebar onSubmenuChange={setActiveSection} />
       <SidebarInset>
         <header className="flex h-16 shrink-0 items-center gap-2 transition-[width,height] ease-linear group-has-[[data-collapsible=icon]]/sidebar-wrapper:h-12">
           <div className="flex items-center gap-2 px-4">
@@ -26,14 +28,10 @@ export default function DashboardPage() {
             <Separator orientation="vertical" className="mr-2 h-4" />
             <Breadcrumb>
               <BreadcrumbList>
-                <BreadcrumbItem className="hidden md:block">
-                  <BreadcrumbLink href="#">
-                    Building Your Application
-                  </BreadcrumbLink>
-                </BreadcrumbItem>
+                <BreadcrumbItem className="hidden md:block">Dashboard</BreadcrumbItem>
                 <BreadcrumbSeparator className="hidden md:block" />
                 <BreadcrumbItem>
-                  <BreadcrumbPage>Data Fetching</BreadcrumbPage>
+                  <BreadcrumbPage>{activeSection}</BreadcrumbPage> {/* Updated Breadcrumb */}
                 </BreadcrumbItem>
               </BreadcrumbList>
             </Breadcrumb>
@@ -49,5 +47,6 @@ export default function DashboardPage() {
         </div>
       </SidebarInset>
     </SidebarProvider>
-  )
+  );
 }
+

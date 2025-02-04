@@ -1,4 +1,5 @@
 "use client"
+"team-switcher.tsx"
 
 import * as React from "react"
 import { ChevronsUpDown, Plus } from "lucide-react"

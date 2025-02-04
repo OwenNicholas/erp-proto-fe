@@ -1,45 +1,28 @@
-"use client"
+"use client";
 import { AiFillDollarCircle, AiOutlineHistory, AiOutlineTruck, AiFillBook } from "react-icons/ai";
-import * as React from "react"
+import { FaStore } from "react-icons/fa";
+import * as React from "react";
 import {
-  AudioWaveform,
-  BookOpen,
-  Bot,
-  Command,
-  Frame,
   GalleryVerticalEnd,
-  Map,
-  PieChart,
-  Settings2,
-  SquareTerminal,
-} from "lucide-react"
+} from "lucide-react";
 
-import { NavMain } from "@/components/nav-mains"
-import { NavProjects } from "@/components/nav-projects"
-import { NavUser } from "@/components/nav-user"
-import { TeamSwitcher } from "@/components/team-switcher"
+import { NavMain } from "@/components/nav-mains";
+import { NavUser } from "@/components/nav-user";
 import {
   Sidebar,
   SidebarContent,
   SidebarFooter,
   SidebarHeader,
   SidebarRail,
-} from "@/components/ui/sidebar"
+} from "@/components/ui/sidebar";
 
-// This is sample data.
+// Sidebar menu items
 const data = {
   user: {
     name: "shadcn",
     email: "m@example.com",
     avatar: "/avatars/shadcn.jpg",
   },
-  teams: [
-    {
-      name: "TOKO OLIVIA",
-      logo: GalleryVerticalEnd,
-      plan: "Inventory Management",
-    },
-  ],
   navMain: [
     {
       title: "Penjualan",
@@ -47,18 +30,8 @@ const data = {
       icon: AiFillDollarCircle,
       isActive: true,
       items: [
-        {
-          title: "History",
-          url: "#",
-        },
-        {
-          title: "Starred",
-          url: "#",
-        },
-        {
-          title: "Settings",
-          url: "#",
-        },
+        { title: "Penjualan Toko", url: "#" },
+        { title: "Penjualan TikTok", url: "#" },
       ],
     },
     {
@@ -66,18 +39,8 @@ const data = {
       url: "#",
       icon: AiOutlineHistory,
       items: [
-        {
-          title: "Genesis",
-          url: "#",
-        },
-        {
-          title: "Explorer",
-          url: "#",
-        },
-        {
-          title: "Quantum",
-          url: "#",
-        },
+        { title: "Telusuri Item lewat ID", url: "#" },
+        { title: "Lihat Full History", url: "#" },
       ],
     },
     {
@@ -85,22 +48,8 @@ const data = {
       url: "#",
       icon: AiOutlineTruck,
       items: [
-        {
-          title: "Introduction",
-          url: "#",
-        },
-        {
-          title: "Get Started",
-          url: "#",
-        },
-        {
-          title: "Tutorials",
-          url: "#",
-        },
-        {
-          title: "Changelog",
-          url: "#",
-        },
+        { title: "Pindahan", url: "#" },
+        { title: "Retur Barang", url: "#" },
       ],
     },
     {
@@ -108,58 +57,33 @@ const data = {
       url: "#",
       icon: AiFillBook,
       items: [
-        {
-          title: "General",
-          url: "#",
-        },
-        {
-          title: "Team",
-          url: "#",
-        },
-        {
-          title: "Billing",
-          url: "#",
-        },
-        {
-          title: "Limits",
-          url: "#",
-        },
+        { title: "Laporan Harian", url: "#" },
       ],
     },
   ],
-  projects: [
-    {
-      name: "Design Engineering",
-      url: "#",
-      icon: Frame,
-    },
-    {
-      name: "Sales & Marketing",
-      url: "#",
-      icon: PieChart,
-    },
-    {
-      name: "Travel",
-      url: "#",
-      icon: Map,
-    },
-  ],
-}
+};
 
-export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
+export function AppSidebar({ onSubmenuChange }: { onSubmenuChange: (section: string) => void }) {
   return (
-    <Sidebar collapsible="icon" {...props}>
-      <SidebarHeader>
-        <TeamSwitcher teams={data.teams} />
-      </SidebarHeader>
+    <Sidebar collapsible="icon">
+      <SidebarHeader className="flex flex-col items-center py-4 border-b border-gray-200">
+      <div className="flex items-center gap-2">
+        <FaStore className="text-2xl text-gray-900" /> {/* Icon */}
+        <h2 className="text-xl font-semibold text-gray-900 tracking-wide">
+          TOKO OLIVIA
+        </h2>
+      </div>
+      <h3 className="text-sm font-medium text-gray-600">
+        Inventory Management
+      </h3>
+    </SidebarHeader>
       <SidebarContent>
-        <NavMain items={data.navMain} />
-        <NavProjects projects={data.projects} />
+        <NavMain items={data.navMain} onSubmenuChange={onSubmenuChange} />
       </SidebarContent>
       <SidebarFooter>
         <NavUser user={data.user} />
       </SidebarFooter>
       <SidebarRail />
     </Sidebar>
-  )
+  );
 }

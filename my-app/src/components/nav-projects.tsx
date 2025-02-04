@@ -1,4 +1,5 @@
 "use client"
+"nav-projects.tsx"
 
 import {
   Folder,
