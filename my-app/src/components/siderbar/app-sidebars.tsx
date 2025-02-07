@@ -2,12 +2,13 @@
 import { AiFillDollarCircle, AiOutlineHistory, AiOutlineTruck, AiFillBook } from "react-icons/ai";
 import { FaStore } from "react-icons/fa";
 import * as React from "react";
+import { SectionKey } from "@/app/dashboard/dashboard"; 
 import {
   GalleryVerticalEnd,
 } from "lucide-react";
 
-import { NavMain } from "@/components/nav-mains";
-import { NavUser } from "@/components/nav-user";
+import { NavMain } from "@/components/siderbar/nav-mains";
+import { NavUser } from "@/components/siderbar/nav-user";
 import {
   Sidebar,
   SidebarContent,
@@ -28,7 +29,7 @@ const data = {
       title: "Penjualan",
       url: "#",
       icon: AiFillDollarCircle,
-      isActive: true,
+      isActive: false,
       items: [
         { title: "Penjualan Toko", url: "#" },
         { title: "Penjualan TikTok", url: "#" },
@@ -68,7 +69,7 @@ export function AppSidebar({ onSubmenuChange }: { onSubmenuChange: (section: str
     <Sidebar collapsible="icon">
       <SidebarHeader className="flex flex-col items-center py-4 border-b border-gray-200">
       <div className="flex items-center gap-2">
-        <FaStore className="text-2xl text-gray-900" /> {/* Icon */}
+        <FaStore className="text-2xl text-gray-900" />
         <h2 className="text-xl font-semibold text-gray-900 tracking-wide">
           TOKO OLIVIA
         </h2>

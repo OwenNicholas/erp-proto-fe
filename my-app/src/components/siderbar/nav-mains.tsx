@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { ChevronRight, type LucideIcon } from "lucide-react";
 import { IconType } from "react-icons";
+import { SectionKey } from "@/app/dashboard/dashboard"; 
 
 import {
   Collapsible,
@@ -83,7 +84,8 @@ export function NavMain({
                             href={subItem.url}
                             onClick={(e) => {
                               e.preventDefault();
-                              onSubmenuChange(subItem.title); // Update breadcrumb with submenu title
+                              const validSection = subItem.title;
+                              onSubmenuChange(subItem.title as SectionKey); // Update breadcrumb with submenu title
                             }}
                           >
                             <span>{subItem.title}</span>
