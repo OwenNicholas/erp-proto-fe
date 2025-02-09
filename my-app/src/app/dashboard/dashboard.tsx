@@ -22,6 +22,7 @@ import HistoryPenjualanContent from "@/components/pages/HistoryPenjualanContent"
 import PindahanContent from "@/components/pages/Pindahan";
 import TelusuriItemContent from "@/components/pages/TelusuriItemContent";
 import FullHistoryContent from "@/components/pages/FullHistoryContent";
+import TerimaBarangContent from "@/components/pages/TerimaBarangContent";
 
 
 
@@ -33,8 +34,9 @@ const sectionComponents: Record<string, JSX.Element> = {
   "History Penjualan": <HistoryPenjualanContent />,
   "Telusuri Item lewat ID": <TelusuriItemContent />, 
   "Lihat Full History": <FullHistoryContent />, 
-  "Pindahan Inventory": <PindahanContent />, 
+  "Pindahan": <PindahanContent />, 
   "Retur Barang": <div className="p-4 text-lg font-semibold">Retur Barang Content</div>, 
+  "Terima Barang": <TerimaBarangContent />,
   "Laporan Harian": <div className="p-4 text-lg font-semibold">Laporan Harian Content</div>, 
 };
 

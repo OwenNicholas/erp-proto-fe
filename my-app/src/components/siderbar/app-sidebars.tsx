@@ -51,6 +51,7 @@ const data = {
       items: [
         { title: "Pindahan", url: "#" },
         { title: "Retur Barang", url: "#" },
+        { title: "Terima Barang", url: "#" },
       ],
     },
     {
