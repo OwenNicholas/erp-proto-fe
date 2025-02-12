@@ -1,46 +1,52 @@
-"use client"
-"nav-user.tsx"
+"use client";
 
+import { useRouter } from "next/navigation"; 
 import {
-  BadgeCheck,
-  Bell,
   ChevronsUpDown,
-  CreditCard,
   LogOut,
-  Sparkles,
-} from "lucide-react"
+} from "lucide-react";
 
 import {
   Avatar,
   AvatarFallback,
   AvatarImage,
-} from "@/components/ui/avatar"
+} from "@/components/ui/avatar";
 import {
   DropdownMenu,
   DropdownMenuContent,
-  DropdownMenuGroup,
   DropdownMenuItem,
   DropdownMenuLabel,
   DropdownMenuSeparator,
   DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu"
+} from "@/components/ui/dropdown-menu";
 import {
   SidebarMenu,
   SidebarMenuButton,
   SidebarMenuItem,
   useSidebar,
-} from "@/components/ui/sidebar"
+} from "@/components/ui/sidebar";
 
 export function NavUser({
   user,
 }: {
   user: {
-    name: string
-    email: string
-    avatar: string
-  }
+    name: string;
+    email: string;
+    avatar: string;
+  };
 }) {
-  const { isMobile } = useSidebar()
+  const { isMobile } = useSidebar();
+  const router = useRouter(); // 🔹 Get Next.js router instance
+
+  // 🔹 Handle Logout
+  const handleLogout = () => {
+    // Example: Clear authentication tokens if needed
+    localStorage.removeItem("authToken"); // Example: Remove auth token
+    sessionStorage.clear(); // Example: Clear session storage
+
+    // Redirect to homepage
+    router.push("/");
+  };
 
   return (
     <SidebarMenu>
@@ -81,7 +87,7 @@ export function NavUser({
               </div>
             </DropdownMenuLabel>
             <DropdownMenuSeparator />
-            <DropdownMenuItem>
+            <DropdownMenuItem onClick={handleLogout}> {/* 🔹 Handle Logout on Click */}
               <LogOut />
               Log out
             </DropdownMenuItem>
@@ -89,5 +95,5 @@ export function NavUser({
         </DropdownMenu>
       </SidebarMenuItem>
     </SidebarMenu>
-  )
+  );
 }
