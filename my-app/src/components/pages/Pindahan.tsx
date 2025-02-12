@@ -64,7 +64,7 @@ export default function PindahanContent() {
 
     try {
       const response = await fetch("http://localhost:8080/api/transfer", {
-        method: "PUT",
+        method: "POST",
         headers: {
           "Content-Type": "application/json",
         },
