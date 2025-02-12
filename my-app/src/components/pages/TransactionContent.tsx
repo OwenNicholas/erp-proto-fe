@@ -30,30 +30,29 @@ import {
   TableRow,
 } from "@/components/ui/table";
 
-// Define Sales Data Type based on Backend Schema
-export type Sale = {
-  sale_id: number;
-  description: string;
-  quantity: number;
-  price: number;
-  total: number;
-  discount_per_item: number;
+// 🔹 Define Transaction Data Type
+export type Transaction = {
   transaction_id: number;
-  item_id: string;
+  discount_type: string;
+  discount_percent: number;
+  total_discount: number;
+  payment_id: number;
+  customer_name: string;
+  timestamp: string;
 };
 
-export default function TelusuriItemContent() {
-  const [data, setData] = React.useState<Sale[]>([]);
+export default function TransactionHistoryContent() {
+  const [data, setData] = React.useState<Transaction[]>([]);
   const [searchQuery, setSearchQuery] = React.useState<string>("");
   const [sorting, setSorting] = React.useState<SortingState>([]);
   const [columnVisibility, setColumnVisibility] = React.useState<VisibilityState>({});
   const [error, setError] = React.useState<string | null>(null);
 
-  // Fetch data from API on mount
+  // Fetch transaction history from API
   React.useEffect(() => {
-    const fetchSalesData = async () => {
+    const fetchTransactionHistory = async () => {
       try {
-        const response = await fetch("http://localhost:8080/api/sales", {
+        const response = await fetch("http://localhost:8080/api/transactions", {
           method: "GET",
           headers: {
             "Content-Type": "application/json",
@@ -61,57 +60,63 @@ export default function TelusuriItemContent() {
         });
 
         if (!response.ok) {
-          throw new Error("Failed to fetch sales data");
+          throw new Error(`Failed to fetch transactions (Status: ${response.status})`);
         }
 
-        const sales = await response.json();
-        if (sales && sales.data && Array.isArray(sales.data))
-        setData(sales.data);
+        const result = await response.json();
+
+        console.log("🔹 API Response:", result); // ✅ Debugging: Log response
+
+        if (result && result.data && Array.isArray(result.data)) {
+          setData(result.data);
+        } else {
+          throw new Error("Unexpected API response format");
+        }
       } catch (err) {
-        setError("Error fetching sales data. Please try again.");
+        setError("Error fetching transaction history. Please try again.");
         console.error(err);
       }
     };
 
-    fetchSalesData();
+    fetchTransactionHistory();
   }, []);
 
-  // Filter data based on search query (Item ID)
+  // 🔹 Filter transactions based on search query (customer name)
   const filteredData = React.useMemo(
     () =>
-      data.filter((sale) =>
-        sale.item_id.toLowerCase().includes(searchQuery.toLowerCase())
+      data.filter((transaction) =>
+        transaction.customer_name.toLowerCase().includes(searchQuery.toLowerCase())
       ),
     [data, searchQuery]
   );
 
-  // Columns Definition
-  const columns: ColumnDef<Sale>[] = [
+  // 🔹 Define Table Columns
+  const columns: ColumnDef<Transaction>[] = [
     {
-      accessorKey: "sale_id",
-      header: "Sale ID",
-      cell: ({ row }) => <div>{row.getValue("sale_id")}</div>,
+      accessorKey: "transaction_id",
+      header: "Transaction ID",
+      cell: ({ row }) => <div>{row.getValue("transaction_id")}</div>,
     },
     {
-      accessorKey: "item_id",
-      header: "Item ID",
-      cell: ({ row }) => <div>{row.getValue("item_id")}</div>,
+      accessorKey: "customer_name",
+      header: "Customer Name",
+      cell: ({ row }) => <div className="capitalize">{row.getValue("customer_name")}</div>,
     },
     {
-      accessorKey: "description",
-      header: "Description",
-      cell: ({ row }) => <div className="capitalize">{row.getValue("description")}</div>,
+      accessorKey: "discount_type",
+      header: "Discount Type",
+      cell: ({ row }) => <div className="text-center">{row.getValue("discount_type")}</div>,
     },
     {
-      accessorKey: "quantity",
-      header: "Quantity",
-      cell: ({ row }) => <div className="text-center">{row.getValue("quantity")}</div>,
+      accessorKey: "discount_percent",
+      header: "Discount (%)",
+      cell: ({ row }) => <div className="text-center">{row.getValue("discount_percent")} %</div>,
     },
     {
-      accessorKey: "price",
-      header: "Price",
+      accessorKey: "total_discount",
+      header: "Total Discount",
       cell: ({ row }) => {
-        const amount = parseFloat(row.getValue("price"));
+        const amount = parseFloat(row.getValue("total_discount"));
         const formatted = new Intl.NumberFormat("id-ID", {
           style: "currency",
           currency: "IDR",
@@ -120,26 +125,18 @@ export default function TelusuriItemContent() {
       },
     },
     {
-      accessorKey: "total",
-      header: "Total",
-      cell: ({ row }) => {
-        const amount = parseFloat(row.getValue("total"));
-        const formatted = new Intl.NumberFormat("id-ID", {
-          style: "currency",
-          currency: "IDR",
-        }).format(amount);
-        return <div className="text-right font-medium">{formatted}</div>;
-      },
+      accessorKey: "payment_id",
+      header: "Payment ID",
+      cell: ({ row }) => <div className="text-center">{row.getValue("payment_id")}</div>,
     },
     {
-      accessorKey: "discount_per_item",
-      header: "Discount",
-      cell: ({ row }) => <div className="text-center">{row.getValue("discount_per_item")}</div>,
-    },
-    {
-      accessorKey: "transaction_id",
-      header: "Transaction ID",
-      cell: ({ row }) => <div className="text-center">{row.getValue("transaction_id")}</div>,
+      accessorKey: "timestamp",
+      header: "Date & Time",
+      cell: ({ row }) => (
+        <div className="text-center">
+          {new Date(row.getValue("timestamp")).toLocaleString()}
+        </div>
+      ),
     },
   ];
 
@@ -167,7 +164,7 @@ export default function TelusuriItemContent() {
         {/* Search Bar for Filtering */}
         <div className="flex items-center py-4">
           <Input
-            placeholder="Cari Lewat Item ID..."
+            placeholder="Cari pakai nama customer..."
             value={searchQuery}
             onChange={(event) => setSearchQuery(event.target.value)}
             className="max-w-sm"
@@ -216,10 +213,7 @@ export default function TelusuriItemContent() {
                 table.getRowModel().rows.map((row) => (
                   <TableRow key={row.id} data-state={row.getIsSelected() && "selected"}>
                     {row.getVisibleCells().map((cell) => (
-                      <TableCell
-                        key={cell.id}
-                        className={cell.column.id === "description" ? "capitalize text-left" : "text-center"}
-                      >
+                      <TableCell key={cell.id} className="text-center">
                         {flexRender(cell.column.columnDef.cell, cell.getContext())}
                       </TableCell>
                     ))}
@@ -228,7 +222,7 @@ export default function TelusuriItemContent() {
               ) : (
                 <TableRow>
                   <TableCell colSpan={columns.length} className="h-24 text-center">
-                    No results.
+                    No results found.
                   </TableCell>
                 </TableRow>
               )}

@@ -21,7 +21,7 @@ import PenjualanTiktokContent from "@/components/pages/PenjualanTiktokContent";
 import HistoryPenjualanContent from "@/components/pages/HistoryPenjualanContent";
 import PindahanContent from "@/components/pages/Pindahan";
 import TelusuriItemContent from "@/components/pages/TelusuriItemContent";
-import FullHistoryContent from "@/components/pages/FullHistoryContent";
+import TransactionContent from "@/components/pages/TransactionContent";
 import TerimaBarangContent from "@/components/pages/TerimaBarangContent";
 
 
@@ -33,7 +33,7 @@ const sectionComponents: Record<string, JSX.Element> = {
   "Penjualan TikTok": <PenjualanTiktokContent />, 
   "History Penjualan": <HistoryPenjualanContent />,
   "Telusuri Item lewat ID": <TelusuriItemContent />, 
-  "Lihat Full History": <FullHistoryContent />, 
+  "History Transaksi": <TransactionContent />, 
   "Pindahan": <PindahanContent />, 
   "Retur Barang": <div className="p-4 text-lg font-semibold">Retur Barang Content</div>, 
   "Terima Barang": <TerimaBarangContent />,

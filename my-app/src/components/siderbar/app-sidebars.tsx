@@ -41,7 +41,7 @@ const data = {
       icon: AiOutlineHistory,
       items: [
         { title: "Telusuri Item lewat ID", url: "#" },
-        { title: "Lihat Full History", url: "#" },
+        { title: "History Transaksi", url: "#" },
       ],
     },
     {
