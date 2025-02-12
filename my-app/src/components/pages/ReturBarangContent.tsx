@@ -3,132 +3,77 @@
 import * as React from "react";
 import { useState } from "react";
 
-import {
-  Select,
-  SelectContent,
-  SelectGroup,
-  SelectItem,
-  SelectLabel,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
 
-// 🔹 Define Transfer Data Type
-export type TransferData = {
-  source: string;
-  destination: string;
+// 🔹 Define Return Data Type
+export type InventoryData = {
   item_id: string;
   quantity: number;
   description: string;
+  reason: string;
 };
 
-export default function PindahanContent() {
+export default function ReturBarangContent() {
   // 🔹 State for Input Fields
-  const [source, setSource] = useState("");
-  const [destination, setDestination] = useState("");
   const [itemId, setItemId] = useState("");
   const [quantity, setQuantity] = useState<number | "">("");
   const [description, setDescription] = useState("");
+  const [reason, setReason] = useState("");
   const [message, setMessage] = useState<string | null>(null);
   const [isConfirmOpen, setIsConfirmOpen] = useState(false); // 🔹 Confirmation Modal State
 
-  // 🔹 Handle Form Submission (Opens Confirmation Modal)
+  // 🔹 Open Confirmation Modal
   const handleOpenConfirm = () => {
-    if (!source || !destination || source === destination) {
-      setMessage("❌ Source and Destination must be different.");
-      return;
-    }
-
-    if (!itemId || !quantity || !description) {
+    if (!itemId || !quantity || !description || !reason) {
       setMessage("❌ All fields are required.");
       return;
     }
-
     setIsConfirmOpen(true);
   };
 
-  // 🔹 Confirm Transfer and Submit Data
-  const handleConfirmTransfer = async () => {
+  // 🔹 Confirm and Submit Return Request
+  const handleConfirmReturn = async () => {
     setIsConfirmOpen(false); // Close the modal
 
-    const transferData: TransferData = {
-      source,
-      destination,
+    const inventoryData: InventoryData = {
       item_id: itemId,
       quantity: Number(quantity),
       description,
+      reason,
     };
 
     try {
-      const response = await fetch("http://localhost:8080/api/transfer", {
-        method: "PUT",
+      const response = await fetch("http://localhost:8080/api/inventory_gudang", {
+        method: "POST",
         headers: {
           "Content-Type": "application/json",
         },
-        body: JSON.stringify(transferData),
+        body: JSON.stringify(inventoryData),
       });
 
       if (!response.ok) {
-        throw new Error(`Failed to transfer item (Status: ${response.status})`);
+        throw new Error(`Failed to return item (Status: ${response.status})`);
       }
 
-      setMessage("✅ Item transferred successfully!");
+      setMessage("✅ Item return request submitted successfully!");
       setItemId("");
       setQuantity("");
       setDescription("");
-      setSource("");
-      setDestination("");
+      setReason("");
     } catch (err) {
-      setMessage("❌ Error transferring item. Please try again.");
+      setMessage("❌ Error returning item. Please try again.");
       console.error(err);
     }
   };
 
   return (
     <div className="w-full max-w-lg mx-auto mt-10 p-6 bg-white shadow-md rounded-lg">
-      <h2 className="text-2xl font-semibold text-center mb-4">Pindahan Inventory</h2>
+      <h2 className="text-2xl font-semibold text-center mb-4">Retur Barang</h2>
 
       {/* 🔹 Display Success/Error Message */}
       {message && <div className={`text-center mb-4 ${message.startsWith("✅") ? "text-green-600" : "text-red-600"}`}>{message}</div>}
-
-      {/* 🔹 Select Source Inventory */}
-      <div className="mb-4">
-        <label className="block text-sm font-medium">Dari</label>
-        <Select onValueChange={setSource}>
-          <SelectTrigger className="w-full mt-1">
-            <SelectValue placeholder="Select Source" />
-          </SelectTrigger>
-          <SelectContent>
-            <SelectGroup>
-              <SelectLabel>Inventories</SelectLabel>
-              <SelectItem value="Gudang">Gudang</SelectItem>
-              <SelectItem value="Toko">Toko</SelectItem>
-              <SelectItem value="Tiktok">TikTok</SelectItem>
-            </SelectGroup>
-          </SelectContent>
-        </Select>
-      </div>
-
-      {/* 🔹 Select Destination Inventory */}
-      <div className="mb-4">
-        <label className="block text-sm font-medium">Ke</label>
-        <Select onValueChange={setDestination}>
-          <SelectTrigger className="w-full mt-1">
-            <SelectValue placeholder="Select Destination" />
-          </SelectTrigger>
-          <SelectContent>
-            <SelectGroup>
-              <SelectLabel>Inventories</SelectLabel>
-              <SelectItem value="Gudang">Gudang</SelectItem>
-              <SelectItem value="Toko">Toko</SelectItem>
-              <SelectItem value="Tiktok">TikTok</SelectItem>
-            </SelectGroup>
-          </SelectContent>
-        </Select>
-      </div>
 
       {/* 🔹 Item ID */}
       <div className="mb-4">
@@ -156,7 +101,7 @@ export default function PindahanContent() {
 
       {/* 🔹 Description */}
       <div className="mb-4">
-        <label className="block text-sm font-medium">Description</label>
+        <label className="block text-sm font-medium">Deskripsi</label>
         <Input
           type="text"
           placeholder="Enter Description"
@@ -166,9 +111,21 @@ export default function PindahanContent() {
         />
       </div>
 
+      {/* 🔹 Reason */}
+      <div className="mb-4">
+        <label className="block text-sm font-medium">Alasan Retur</label>
+        <Input
+          type="text"
+          placeholder="Enter Return Reason"
+          value={reason}
+          onChange={(e) => setReason(e.target.value)}
+          className="w-full mt-1"
+        />
+      </div>
+
       {/* 🔹 Submit Button (Opens Confirmation Modal) */}
       <Button onClick={handleOpenConfirm} className="w-full bg-blue-600 text-white py-2 mt-4">
-        Pindahkan
+        Retur
       </Button>
 
       {/* 🔹 Confirmation Modal */}
@@ -176,14 +133,18 @@ export default function PindahanContent() {
         <Dialog open={isConfirmOpen} onOpenChange={setIsConfirmOpen}>
           <DialogContent>
             <DialogHeader>
-              <DialogTitle>Konfirmasi Transfer</DialogTitle>
+              <DialogTitle>Konfirmasi Retur Produk</DialogTitle>
             </DialogHeader>
-            <p>Anda yakin memindahkan <strong>{quantity}x {itemId}</strong> dari <strong>{source}</strong> ke <strong>{destination}</strong>?</p>
+            <p>
+              Anda yakin retur <strong>{quantity}x {itemId}</strong>?<br />
+              <strong>Alasan:</strong> {reason} <br />
+              <strong>Deskripsi:</strong> {description}
+            </p>
             <DialogFooter>
               <Button variant="outline" onClick={() => setIsConfirmOpen(false)}>
                 Cancel
               </Button>
-              <Button className="bg-blue-600 text-white" onClick={handleConfirmTransfer}>
+              <Button className="bg-red-600 text-white" onClick={handleConfirmReturn}>
                 Konfirmasi
               </Button>
             </DialogFooter>

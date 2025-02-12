@@ -23,6 +23,7 @@ import PindahanContent from "@/components/pages/Pindahan";
 import TelusuriItemContent from "@/components/pages/TelusuriItemContent";
 import TransactionContent from "@/components/pages/TransactionContent";
 import TerimaBarangContent from "@/components/pages/TerimaBarangContent";
+import ReturBarangContent from "@/components/pages/ReturBarangContent";
 
 
 
@@ -35,7 +36,7 @@ const sectionComponents: Record<string, JSX.Element> = {
   "Telusuri Item lewat ID": <TelusuriItemContent />, 
   "History Transaksi": <TransactionContent />, 
   "Pindahan": <PindahanContent />, 
-  "Retur Barang": <div className="p-4 text-lg font-semibold">Retur Barang Content</div>, 
+  "Retur Barang": <ReturBarangContent />, 
   "Terima Barang": <TerimaBarangContent />,
   "Laporan Harian": <div className="p-4 text-lg font-semibold">Laporan Harian Content</div>, 
 };
