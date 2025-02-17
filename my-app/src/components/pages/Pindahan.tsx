@@ -20,7 +20,6 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "
 export type TransferData = {
   source: string;
   destination: string;
-  item_id: string;
   quantity: number;
   description: string;
 };
@@ -57,13 +56,12 @@ export default function PindahanContent() {
     const transferData: TransferData = {
       source,
       destination,
-      item_id: itemId,
       quantity: Number(quantity),
       description,
     };
 
     try {
-      const response = await fetch("http://localhost:8080/api/transfer", {
+      const response = await fetch(`http://localhost:8080/api/inventory/${itemId}`,{
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -104,9 +102,9 @@ export default function PindahanContent() {
           <SelectContent>
             <SelectGroup>
               <SelectLabel>Inventories</SelectLabel>
-              <SelectItem value="Gudang">Gudang</SelectItem>
-              <SelectItem value="Toko">Toko</SelectItem>
-              <SelectItem value="Tiktok">TikTok</SelectItem>
+              <SelectItem value="inventory_gudang">Gudang</SelectItem>
+              <SelectItem value="inventory_toko">Toko</SelectItem>
+              <SelectItem value="inventory_tiktok">TikTok</SelectItem>
             </SelectGroup>
           </SelectContent>
         </Select>
@@ -122,9 +120,9 @@ export default function PindahanContent() {
           <SelectContent>
             <SelectGroup>
               <SelectLabel>Inventories</SelectLabel>
-              <SelectItem value="Gudang">Gudang</SelectItem>
-              <SelectItem value="Toko">Toko</SelectItem>
-              <SelectItem value="Tiktok">TikTok</SelectItem>
+              <SelectItem value="inventory_gudang">Gudang</SelectItem>
+              <SelectItem value="inventory_toko">Toko</SelectItem>
+              <SelectItem value="inventory_tiktok">TikTok</SelectItem>
             </SelectGroup>
           </SelectContent>
         </Select>

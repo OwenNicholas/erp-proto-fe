@@ -9,7 +9,6 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "
 
 // 🔹 Define Inventory Data Type
 export type InventoryData = {
-  item_id: string;
   quantity: number;
   description: string;
 };
@@ -36,14 +35,13 @@ export default function TerimaBarangContent() {
     setIsConfirmOpen(false); // Close the modal
 
     const inventoryData: InventoryData = {
-      item_id: itemId,
       quantity: Number(quantity),
       description,
     };
 
     try {
-      const response = await fetch("http://localhost:8080/api/inventory_gudang", {
-        method: "POST",
+      const response = await fetch(`http://localhost:8080/api/items/${itemId}`, {
+        method: "POST", // 🔹 Ensure it's a POST request
         headers: {
           "Content-Type": "application/json",
         },
@@ -54,7 +52,7 @@ export default function TerimaBarangContent() {
         throw new Error(`Failed to add inventory (Status: ${response.status})`);
       }
 
-      setMessage("✅ Item added to inventory successfully!");
+      setMessage("✅ Item successfully added to inventory!");
       setItemId("");
       setQuantity("");
       setDescription("");
@@ -97,7 +95,7 @@ export default function TerimaBarangContent() {
 
       {/* 🔹 Description */}
       <div className="mb-4">
-        <label className="block text-sm font-medium">Description</label>
+        <label className="block text-sm font-medium">Deskripsi</label>
         <Input
           type="text"
           placeholder="Enter Description"

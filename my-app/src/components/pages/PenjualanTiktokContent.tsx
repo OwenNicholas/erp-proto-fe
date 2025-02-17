@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import {
   Table,
   TableBody,
@@ -12,16 +12,6 @@ import {
 } from "@/components/ui/table";
 
 import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-  DialogTrigger,
-} from "@/components/ui/dialog"
-
-import {
   Select,
   SelectContent,
   SelectGroup,
@@ -31,44 +21,59 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 
-import {
-  AlertDialog,
-  AlertDialogAction,
-  AlertDialogCancel,
-  AlertDialogContent,
-  AlertDialogDescription,
-  AlertDialogFooter,
-  AlertDialogHeader,
-  AlertDialogTitle,
-  AlertDialogTrigger,
-} from "@/components/ui/alert-dialog";
-
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { AiOutlinePlus, AiOutlineMinus } from "react-icons/ai";
-import { Label } from "@/components/ui/label"
+import { Dialog, DialogContent, DialogHeader, DialogFooter, DialogTitle } from "@/components/ui/dialog";
 
-// Sample initial data
-const initialInvoices = [
-  { invoice: "A001", hargaSatuan: "Rp.250.000", jumlah: "1", discountPerItem: "0", total: "Rp.250.000", description: "" },
-  { invoice: "A002", hargaSatuan: "Rp.150.000", jumlah: "1", discountPerItem: "0", total: "Rp.150.000", description: "" },
-];
+export default function PenjualanTiktokContent() {
+  const [invoices, setInvoices] = useState([
+    { invoice: "", hargaSatuan: "Rp.0", jumlah: "1", discountPerItem: "0", total: "Rp.0", description: "", stock: "" },
+  ]);
 
-export default function PenjualanTokoContent() {
-  const [invoices, setInvoices] = useState(initialInvoices);
-  const [isSubmitting, setIsSubmitting] = useState(false);
   const [discountType, setDiscountType] = useState<"none" | "percent" | "amount">("none");
   const [discountPercent, setDiscountPercent] = useState<number>(0);
-  const [discountAmount, setDiscountAmount] = useState<number>(0);
-  const [isDialogOpen, setIsDialogOpen] = useState(false);
-  const [isConfirmDialogOpen, setIsConfirmDialogOpen] = useState(false); // Final confirmation dialog
-  const [customerName, setCustomerName] = useState("");
+  const [focusedRow, setFocusedRow] = useState<number | null>(null); // Track focused row for dropdown
+  const [inventory, setInventory] = useState([]); // Store inventory data
+  const [filteredItems, setFilteredItems] = useState([]); // Store filtered items
+  const [isPaymentDialogOpen, setIsPaymentDialogOpen] = useState(false);
+  const [isConfirmDialogOpen, setIsConfirmDialogOpen] = useState(false);
   const [paymentMethod, setPaymentMethod] = useState("");
+  const [customerName, setCustomerName] = useState("");
+
+  // Fetch inventory on component mount
+  useEffect(() => {
+    fetchInventory();
+  }, []);
+
+  const fetchInventory = async () => {
+    try {
+      const response = await fetch("http://localhost:8080/api/inventory/tiktok");
+      if (!response.ok) {
+        throw new Error("Failed to fetch inventory");
+      }
+      const data = await response.json();
+      setInventory(data.data || []);
+    } catch (error) {
+      console.error("Error fetching inventory:", error);
+    }
+  };
 
   // Function to safely parse a price string into a number
   const parsePrice = (value: string | undefined): number => {
     if (!value) return 0;
-    return parseFloat(value.replace(/Rp\.|,/g, "").replace(".000", "")) || 0;
+    const number = parseFloat(value.replace(/Rp\.|,/g, "")) || 0;
+    return number
+  };
+
+  const parseAndFormatPrice = (value: string | undefined): number => {
+    if (!value) return 0;
+  
+    // Remove "Rp." and commas
+    const numericValue = parseFloat(value.replace(/^Rp\./, "").replace(/,/g, "")) || 0;
+  
+    // Multiply by 1000 and ensure 3 decimal places
+    return parseFloat((numericValue * 1000).toFixed(3));
   };
 
   // Function to format as Rp. currency
@@ -81,141 +86,168 @@ export default function PenjualanTokoContent() {
     const updatedInvoices = [...invoices];
     updatedInvoices[index] = { ...updatedInvoices[index], [field]: value };
 
+    if (field === "jumlah") {
+      const quantity = parseInt(value) || 0;
+      const stockAvailable = parseInt(updatedInvoices[index].stock) || 0;
+  
+      // Prevent quantity from exceeding stock
+      if (quantity > stockAvailable) {
+        alert(`Jumlah tidak boleh lebih dari stok yang tersedia (${stockAvailable}).`);
+        updatedInvoices[index].jumlah = stockAvailable.toString(); // Set to max available stock
+      }
+    }
+
     // Recalculate total when hargaSatuan, jumlah, or discount changes
     if (["hargaSatuan", "jumlah", "discountPerItem"].includes(field)) {
       const price = parsePrice(updatedInvoices[index].hargaSatuan);
       const quantity = parseInt(updatedInvoices[index].jumlah) || 0;
       const discount = parsePrice(updatedInvoices[index].discountPerItem);
 
-      // Calculate new total
       const newTotal = price * quantity - discount * quantity;
-      updatedInvoices[index].total = `${formatRupiah(Math.max(newTotal, 0))}.000`;
+      updatedInvoices[index].total = formatRupiah(Math.max(newTotal, 0));
     }
 
     setInvoices(updatedInvoices);
+  };
+
+  // Handle item search when user types item_id
+  const handleItemSearch = (index: number, value: string) => {
+    setInvoices((prev) => {
+      const updatedInvoices = [...prev];
+      updatedInvoices[index].invoice = value;
+
+      // Filter inventory to show matching items
+      const filtered = inventory.filter((item: any) =>
+        item.item_id.toLowerCase().includes(value.toLowerCase())
+      );
+      setFilteredItems(filtered);
+      setFocusedRow(index);
+
+      return updatedInvoices;
+    });
+  };
+
+  // Handle selection from dropdown and autofill hargaSatuan
+  const handleSelectItem = (index: number, item: any) => {
+    setInvoices((prev) => {
+      const updatedInvoices = [...prev];
+      updatedInvoices[index].invoice = item.item_id;
+      updatedInvoices[index].hargaSatuan = formatRupiah(item.price);
+      updatedInvoices[index].description = item.description;
+      updatedInvoices[index].stock = item.quantity;
+      setFilteredItems([]); // Clear dropdown after selection
+      setFocusedRow(null);
+      return updatedInvoices;
+    });
   };
 
   // Add a new row
   const addRow = () => {
     setInvoices([
       ...invoices,
-      { invoice: `INV00${invoices.length + 1}`, hargaSatuan: "Rp.0.000", jumlah: "0", discountPerItem: "0", total: "Rp.0.000", description: "" },
+      { invoice: "", hargaSatuan: "Rp.0", jumlah: "1", discountPerItem: "0", total: "Rp.0", description: "" , stock: "0"},
     ]);
   };
 
   // Remove a row
   const removeRow = (index: number) => {
-    const updatedInvoices = invoices.filter((_, i) => i !== index);
-    setInvoices(updatedInvoices);
+    setInvoices(invoices.filter((_, i) => i !== index));
   };
 
-  // Reset discount
-  const handleDiscountCancel = () => {
-    setDiscountType("none");
-    setDiscountPercent(0);
-    setDiscountAmount(0);
-    setInvoices(
-      invoices.map((invoice) => ({ ...invoice, discountPerItem: "0" })) // Reset discountPerItem for all rows
-    );
-  };
-
-  // Calculate the grand total with applied discounts
   const calculateGrandTotal = (): string => {
-    const subtotal = invoices.reduce((sum, row) => sum + parsePrice(row.total), 0);
+    
+    let subtotal = invoices.reduce((sum, row) => {
+      const price = parsePrice(row.hargaSatuan);
+      const quantity: number = isNaN(parseInt(row.jumlah)) ? 0 : parseInt(row.jumlah);
+      const discountPerItem = parseFloat(row.discountPerItem) || 0;
+  
+      // Ensure discount is properly multiplied by quantity
+      const total = price * quantity - discountPerItem * quantity;
+  
+      return sum + total;
+    }, 0);
 
-    let discountedTotal = subtotal;
-    if (discountType === "percent") {
+    if (discountType === "percent" && discountPercent > 0) {
       const discountValue = (subtotal * discountPercent) / 100;
-      discountedTotal = subtotal - discountValue;
-    } else if (discountType === "amount") {
-      discountedTotal = subtotal - discountAmount;
+      subtotal -= discountValue;
     }
-
-    return `${formatRupiah(Math.max(discountedTotal, 0))}.000`;
+  
+    // Convert subtotal to ensure exactly 3 decimal places (thousands format)
+    const formattedSubtotal = (subtotal).toFixed(3);
+  
+    return `Rp.${parseFloat(formattedSubtotal).toLocaleString("id-ID", {
+      minimumFractionDigits: 3,
+      maximumFractionDigits: 3,
+    })}`;
   };
 
-  const handleConfirm = async () => {
+  const handleProceedToPayment = () => {
+    setIsPaymentDialogOpen(true);
+  };
+
+  const handleConfirmSale = async () => {
     setIsConfirmDialogOpen(false);
-    setIsSubmitting(true);
-  
+    const processedInvoices = invoices.map(({ invoice, hargaSatuan, jumlah, discountPerItem, description, total }) => ({
+      item_id: invoice,
+      price: parseAndFormatPrice(hargaSatuan),
+      quantity: parseInt(jumlah),
+      discount_per_item: parseAndFormatPrice(discountPerItem),
+      description: description,
+      total: parseAndFormatPrice(total),
+    }));
+
+    const subtotal = processedInvoices.reduce((sum, item) => sum + item.total, 0);
+
+    // Calculate total discount based on discount type
+    let totalDiscount = 0;
+    if (discountType === "amount") {
+      totalDiscount = processedInvoices.reduce(
+        (sum, item) => sum + (item.discount_per_item * item.quantity),
+        0
+      );
+    } else if (discountType === "percent") {
+        totalDiscount = (subtotal * discountPercent) / 100;
+    }
+    
+    const payload = {
+      sales: processedInvoices,
+      discount_type: discountType,
+      discount_percent: discountPercent,
+      total_discount: totalDiscount,
+      payment_id: parseInt(paymentMethod),
+      customer_name: customerName,
+      location: "tiktok",
+    };
+
     try {
-      // Process invoices for the backend
-      const processedInvoices = invoices.map((invoice) => ({
-        item_id: invoice.invoice,
-        price: parseInt(`${parsePrice(invoice.hargaSatuan)}000`), // Convert to number
-        quantity: parseInt(invoice.jumlah) || 0, // Convert to integer
-        discount_per_item: parseInt(`${parsePrice(invoice.discountPerItem)}000`), // Convert to number
-        total: parseInt(`${parsePrice(invoice.total)}000`), // Convert to number
-        description: invoice.description,
-      }));
-  
-      // Calculate total discount
-      const totalDiscount =
-        discountType === "percent"
-          ? processedInvoices.reduce(
-              (sum, item) => sum + (item.price * item.quantity * discountPercent) / 100,
-              0
-            )
-          : processedInvoices.reduce((sum, item) => sum + item.discount_per_item * item.quantity, 0);
-  
-      // Payload for the backend
-      const payload = {
-        sales: processedInvoices,
-        discount_type: discountType,
-        discount_percent: discountPercent,
-        total_discount: Math.round(totalDiscount), // Rounded to nearest integer
-        payment_id: parseInt(paymentMethod),
-        customer_name: customerName,
-      };
-  
-      console.log("Submitting payload:", payload);
-  
       const response = await fetch("http://localhost:8080/api/transactions", {
         method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
+        headers: { "Content-Type": "application/json" },
         body: JSON.stringify(payload),
       });
-  
-      if (!response.ok) {
-        throw new Error("Failed to submit data");
-      }
-  
-      const data = await response.json();
-      alert("Invoices submitted successfully!");
-      console.log("Response:", data);
-
-      setCustomerName("");
-      setPaymentMethod("");
+      if (!response.ok) throw new Error("Failed to process transaction");
+      alert("Sale successful!");
     } catch (error) {
-      console.error("Error submitting invoices:", error);
-      alert("Failed to submit invoices.");
-    } finally {
-      setIsSubmitting(false);
+      console.error("Transaction error:", error);
+      alert("Transaction failed!");
     }
-  };
-
-  const handleDialogCancel = () => {
-    // Reset customerName and paymentMethod on dialog cancel
-    setCustomerName("");
-    setPaymentMethod("");
-    setIsDialogOpen(false);
   };
 
   return (
     <div className="flex flex-col justify-center items-center min-h-[85vh] mt-[-40px]">
-      <div className="w-full max-w-4xl">
+      <div className="w-full max-w-5xl">
         {/* Discount Selection */}
-        <div className="flex justify-end mb-4 mt-[-20px]">
+        <div className="flex justify-end mb-4">
           <Select
             onValueChange={(value) => {
+              setDiscountPercent(0);
+              setInvoices(invoices.map((invoice) => ({ ...invoice, discountPerItem: "0" }))); // Reset discount per item
               if (value === "percent") {
-                setDiscountType("percent");
+                setDiscountType("percent");      
               } else if (value === "amount") {
                 setDiscountType("amount");
-              } else if (value === "none") {
-                handleDiscountCancel();
+              } else {
+                setDiscountType("none");
               }
             }}
           >
@@ -232,15 +264,11 @@ export default function PenjualanTokoContent() {
             </SelectContent>
           </Select>
         </div>
-
         {/* Diskon % */}
         {discountType === "percent" && (
           <div className="mb-4">
-            <label htmlFor="discountPercent" className="font-medium">
-              Diskon %:
-            </label>
+            <label className="font-medium">Diskon %:</label>
             <Input
-              id="discountPercent"
               type="number"
               value={discountPercent}
               onChange={(e) => setDiscountPercent(parseFloat(e.target.value) || 0)}
@@ -249,26 +277,16 @@ export default function PenjualanTokoContent() {
           </div>
         )}
 
-        {/* Diskon Rp */}
-        {discountType === "amount" && (
-          <div className="mb-4">
-            <label htmlFor="discountAmount" className="font-medium">
-              Diskon Rp per Item:
-            </label>
-          </div>
-        )}
-
-        {/* Table */}
-        <Table className="w-full border border-gray-300 rounded-lg shadow-md bg-white">
+        <Table>
           <TableHeader>
-            <TableRow className="bg-gray-100">
-              <TableHead className="w-[120px] text-center">ID Barang</TableHead>
-              <TableHead className="text-center">Harga Satuan</TableHead>
-              <TableHead className="text-center">Jumlah</TableHead>
-              {discountType === "amount" && <TableHead className="text-center">Diskon per Item</TableHead>}
-              <TableHead className="text-center">Deskripsi</TableHead>
-              <TableHead className="text-center">Total</TableHead>
-              <TableHead className="text-center">Aksi</TableHead>
+            <TableRow>
+              <TableHead>ID Barang</TableHead>
+              <TableHead>Harga Satuan</TableHead>
+              <TableHead>Jumlah</TableHead>
+              {discountType === "amount" && <TableHead>Diskon per Item</TableHead>}
+              <TableHead>Deskripsi</TableHead>
+              <TableHead>Sisa Stock</TableHead>
+              <TableHead>Aksi</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
@@ -277,55 +295,47 @@ export default function PenjualanTokoContent() {
                 <TableCell>
                   <Input
                     value={invoice.invoice}
-                    onChange={(e) => handleInputChange(index, "invoice", e.target.value)}
+                    onChange={(e) => handleItemSearch(index, e.target.value)}
                     className="text-center"
+                    placeholder="Enter item ID"
+                    onFocus={() => setFocusedRow(index)} // Show dropdown only for this row
+                    onBlur={() => setTimeout(() => setFocusedRow(null), 200)} // Hide after selection
                   />
+                  {focusedRow === index && filteredItems.length > 0 &&(
+                    <div className="absolute bg-white border shadow-md w-full max-h-40 overflow-y-auto z-10">
+                      {filteredItems.map((item: any) => (
+                        <div
+                          key={item.item_id}
+                          className="p-2 hover:bg-gray-200 cursor-pointer"
+                          onClick={() => handleSelectItem(index, item)}
+                        >
+                          {item.item_id} - {item.description} ({item.stock} left)
+                        </div>
+                      ))}
+                    </div>
+                  )}
                 </TableCell>
-                <TableCell>
-                  <Input
-                    value={invoice.hargaSatuan}
-                    onChange={(e) => handleInputChange(index, "hargaSatuan", e.target.value)}
-                    className="text-center"
-                  />
-                </TableCell>
+                <TableCell><Input value={invoice.hargaSatuan} readOnly /></TableCell>
                 <TableCell>
                   <Input
                     value={invoice.jumlah}
                     onChange={(e) => handleInputChange(index, "jumlah", e.target.value)}
-                    className="text-center"
                   />
                 </TableCell>
                 {discountType === "amount" && (
-                  <TableCell>
-                    <Input
-                      value={invoice.discountPerItem}
-                      onChange={(e) => handleInputChange(index, "discountPerItem", e.target.value)}
-                      className="text-center"
-                    />
-                  </TableCell>
+                  <TableCell><Input value={invoice.discountPerItem} onChange={(e) => handleInputChange(index, "discountPerItem", e.target.value)} /></TableCell>
                 )}
                 <TableCell>
                   <Input
-                    value={invoice.description}
-                    onChange={(e) => handleInputChange(index, "description", e.target.value)}
-                    className="text-center"
-                  />
-                </TableCell>
-                <TableCell>
-                  <Input
-                    value={invoice.total}
-                    className="text-center bg-gray-100"
+                    value={invoice.description} 
                     readOnly
                   />
                 </TableCell>
-                <TableCell className="text-center">
-                  <Button
-                    variant="destructive"
-                    size="icon"
-                    onClick={() => removeRow(index)}
-                    disabled={invoices.length <= 1}
-                  >
-                    <AiOutlineMinus className="text-lg" />
+
+                <TableCell><Input value={invoice.stock} readOnly /></TableCell>
+                <TableCell>
+                  <Button variant="destructive" onClick={() => removeRow(index)} disabled={invoices.length <= 1}>
+                    <AiOutlineMinus />
                   </Button>
                 </TableCell>
               </TableRow>
@@ -333,78 +343,42 @@ export default function PenjualanTokoContent() {
           </TableBody>
           <TableFooter>
             <TableRow>
-              <TableCell colSpan={discountType === "amount" ? 4 : 3} className="text-center font-bold">
-                Grand Total
-              </TableCell>
-              <TableCell className="text-center font-bold">
-                {calculateGrandTotal()}
-              </TableCell>
-              <TableCell className="text-center">
+              <TableCell colSpan={3} className="text-right font-bold">Grand Total</TableCell>
+              <TableCell className="font-bold">{calculateGrandTotal()}</TableCell>
+              <TableCell>
                 <Button variant="outline" size="icon" onClick={addRow}>
-                  <AiOutlinePlus className="text-lg" />
+                  <AiOutlinePlus />
                 </Button>
               </TableCell>
             </TableRow>
           </TableFooter>
         </Table>
+        <Button className="mt-4" onClick={handleProceedToPayment}>Proceed to Payment</Button>
 
-        {/* Confirm Button with Customer Input Dialog */}
-        <div className="mt-6 flex justify-center">
-          <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
-            <DialogTrigger asChild>
-              <Button className="w-48" disabled={isSubmitting}>
-                {isSubmitting ? "Submitting..." : "Konfirmasi"}
-              </Button>
-            </DialogTrigger>
-            <DialogContent className="sm:max-w-[425px]">
-              <DialogHeader>
-                <DialogTitle>Masukkan Data Pelanggan</DialogTitle>
-                <DialogDescription>Harap isi nama pelanggan dan metode pembayaran.</DialogDescription>
-              </DialogHeader>
-              <div className="grid gap-4 py-4">
-                <div className="grid grid-cols-4 items-center gap-4">
-                  <Label htmlFor="customerName" className="text-right">Nama</Label>
-                  <Input
-                    id="customerName"
-                    value={customerName}
-                    onChange={(e) => setCustomerName(e.target.value)}
-                    className="col-span-3"
-                  />
-                </div>
-                <div className="grid grid-cols-4 items-center gap-4">
-                  <Label htmlFor="paymentMethod" className="text-right">Pembayaran</Label>
-                  <Input
-                    id="paymentMethod"
-                    value={paymentMethod}
-                    onChange={(e) => setPaymentMethod(e.target.value)}
-                    className="col-span-3"
-                  />
-                </div>
-              </div>
-              <DialogFooter>
-                <Button onClick={() => setIsConfirmDialogOpen(true)}>Lanjut</Button>
-              </DialogFooter>
-            </DialogContent>
-          </Dialog>
-        </div>
+         {/* Payment Input Dialog */}
+      <Dialog open={isPaymentDialogOpen} onOpenChange={setIsPaymentDialogOpen}>
+        <DialogContent>
+          <DialogTitle>Enter Payment Details</DialogTitle>
+          <Input placeholder="Customer Name" value={customerName} onChange={(e) => setCustomerName(e.target.value)} />
+          <Input placeholder="Payment Method (ID)" value={paymentMethod} onChange={(e) => setPaymentMethod(e.target.value)} />
+          <DialogFooter>
+            <Button onClick={() => { setIsPaymentDialogOpen(false); setIsConfirmDialogOpen(true); }}>Confirm</Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
 
-        {/* Confirmation Dialog */}
-        <AlertDialog open={isConfirmDialogOpen} onOpenChange={setIsConfirmDialogOpen}>
-          <AlertDialogContent>
-            <AlertDialogHeader>
-              <AlertDialogTitle>Konfirmasi Penjualan</AlertDialogTitle>
-              <AlertDialogDescription>
-                Apakah Anda yakin ingin mengirimkan data ini? Tindakan ini tidak dapat dibatalkan.
-              </AlertDialogDescription>
-            </AlertDialogHeader>
-            <AlertDialogFooter>
-            <Button onClick={handleDialogCancel} variant="outline">
-              Batal
-            </Button>
-              <AlertDialogAction onClick={handleConfirm}>Lanjutkan</AlertDialogAction>
-            </AlertDialogFooter>
-          </AlertDialogContent>
-        </AlertDialog>
+      {/* Final Confirmation Dialog */}
+      <Dialog open={isConfirmDialogOpen} onOpenChange={setIsConfirmDialogOpen}>
+        <DialogContent>
+          <DialogTitle>Are you sure you want to make this sale?</DialogTitle>
+          <DialogFooter>
+            <Button variant="destructive" onClick={() => setIsConfirmDialogOpen(false)}>Cancel</Button>
+            <Button onClick={handleConfirmSale}>Yes, Confirm</Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+
       </div>
     </div>
   );

@@ -9,10 +9,9 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "
 
 // 🔹 Define Return Data Type
 export type InventoryData = {
-  item_id: string;
+  location: string;
   quantity: number;
   description: string;
-  reason: string;
 };
 
 export default function ReturBarangContent() {
@@ -20,13 +19,12 @@ export default function ReturBarangContent() {
   const [itemId, setItemId] = useState("");
   const [quantity, setQuantity] = useState<number | "">("");
   const [description, setDescription] = useState("");
-  const [reason, setReason] = useState("");
   const [message, setMessage] = useState<string | null>(null);
   const [isConfirmOpen, setIsConfirmOpen] = useState(false); // 🔹 Confirmation Modal State
 
   // 🔹 Open Confirmation Modal
   const handleOpenConfirm = () => {
-    if (!itemId || !quantity || !description || !reason) {
+    if (!itemId || !quantity || !description) {
       setMessage("❌ All fields are required.");
       return;
     }
@@ -38,15 +36,14 @@ export default function ReturBarangContent() {
     setIsConfirmOpen(false); // Close the modal
 
     const inventoryData: InventoryData = {
-      item_id: itemId,
+      location: "inventory_gudang", // 🔹 Ensure correct location
       quantity: Number(quantity),
       description,
-      reason,
     };
 
     try {
-      const response = await fetch("http://localhost:8080/api/inventory_gudang", {
-        method: "POST",
+      const response = await fetch(`http://localhost:8080/api/items/${itemId}`, {
+        method: "PUT", // 🔹 Change from POST to PUT
         headers: {
           "Content-Type": "application/json",
         },
@@ -61,7 +58,6 @@ export default function ReturBarangContent() {
       setItemId("");
       setQuantity("");
       setDescription("");
-      setReason("");
     } catch (err) {
       setMessage("❌ Error returning item. Please try again.");
       console.error(err);
@@ -111,18 +107,6 @@ export default function ReturBarangContent() {
         />
       </div>
 
-      {/* 🔹 Reason */}
-      <div className="mb-4">
-        <label className="block text-sm font-medium">Alasan Retur</label>
-        <Input
-          type="text"
-          placeholder="Enter Return Reason"
-          value={reason}
-          onChange={(e) => setReason(e.target.value)}
-          className="w-full mt-1"
-        />
-      </div>
-
       {/* 🔹 Submit Button (Opens Confirmation Modal) */}
       <Button onClick={handleOpenConfirm} className="w-full bg-blue-600 text-white py-2 mt-4">
         Retur
@@ -137,7 +121,6 @@ export default function ReturBarangContent() {
             </DialogHeader>
             <p>
               Anda yakin retur <strong>{quantity}x {itemId}</strong>?<br />
-              <strong>Alasan:</strong> {reason} <br />
               <strong>Deskripsi:</strong> {description}
             </p>
             <DialogFooter>
