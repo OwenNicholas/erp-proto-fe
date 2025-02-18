@@ -14,23 +14,47 @@ export type InventoryData = {
 };
 
 export default function TerimaBarangContent() {
-  // 🔹 State for Input Fields
   const [itemId, setItemId] = useState("");
   const [quantity, setQuantity] = useState<number | "">("");
   const [description, setDescription] = useState("");
   const [message, setMessage] = useState<string | null>(null);
   const [isConfirmOpen, setIsConfirmOpen] = useState(false); // 🔹 Confirmation Modal State
+  const [isExistingItem, setIsExistingItem] = useState<boolean | null>(null); // 🔹 Tracks if item exists
 
-  // 🔹 Open Confirmation Modal
-  const handleOpenConfirm = () => {
+  // Check if Item Exists in DB
+  const checkItemExists = async (itemId: string): Promise<boolean> => {
+    try {
+      const response = await fetch("http://localhost:8080/api/items");
+      
+      if (!response.ok) {
+        throw new Error("Failed to fetch items");
+      }
+
+      const data = await response.json(); 
+      const items = data.data || [];
+
+      return items.some((item: any) => item.item_id === itemId);
+    } catch (error) {
+      console.error("Error checking item:", error);
+      return false; // Assume item does not exist if there's an error
+    }
+  };
+
+  // Open Confirmation Modal
+  const handleOpenConfirm = async () => {
     if (!itemId || !quantity || !description) {
       setMessage("❌ All fields are required.");
       return;
     }
+
+    // Check if item exists and update state
+    const exists = await checkItemExists(itemId);
+    setIsExistingItem(exists);
+
     setIsConfirmOpen(true);
   };
 
-  // 🔹 Confirm and Submit Inventory Reception
+  // Confirm and Submit Inventory Reception
   const handleConfirmReceive = async () => {
     setIsConfirmOpen(false); // Close the modal
 
@@ -40,8 +64,9 @@ export default function TerimaBarangContent() {
     };
 
     try {
+      const method = isExistingItem ? "PUT" : "POST"; // Use PUT if existing, else POST
       const response = await fetch(`http://localhost:8080/api/items/${itemId}`, {
-        method: "POST", // 🔹 Ensure it's a POST request
+        method: method,
         headers: {
           "Content-Type": "application/json",
         },
@@ -49,15 +74,15 @@ export default function TerimaBarangContent() {
       });
 
       if (!response.ok) {
-        throw new Error(`Failed to add inventory (Status: ${response.status})`);
+        throw new Error(`Failed to update inventory (Status: ${response.status})`);
       }
 
-      setMessage("✅ Item successfully added to inventory!");
+      setMessage(`✅ Item successfully ${isExistingItem ? "updated" : "added"} to inventory!`);
       setItemId("");
       setQuantity("");
       setDescription("");
     } catch (err) {
-      setMessage("❌ Error adding item. Please try again.");
+      setMessage("❌ Error updating item. Please try again.");
       console.error(err);
     }
   };
@@ -118,7 +143,7 @@ export default function TerimaBarangContent() {
               <DialogTitle>Konfirmasi Terima Barang</DialogTitle>
             </DialogHeader>
             <p>
-              Anda yakin menambah <strong>{quantity}x {itemId}</strong> ke Inventory Gudang?
+              Anda yakin {isExistingItem ? "memperbarui" : "menambahkan"} <strong>{quantity}x {itemId}</strong> ke Inventory Gudang?
               <br />
               <strong>Deskripsi:</strong> {description}
             </p>
