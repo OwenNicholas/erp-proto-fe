@@ -11,9 +11,11 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "
 export type InventoryData = {
   quantity: number;
   description: string;
+  location?: string; // 🔹 Add location for PUT request only
 };
 
 export default function TerimaBarangContent() {
+  // 🔹 State for Input Fields
   const [itemId, setItemId] = useState("");
   const [quantity, setQuantity] = useState<number | "">("");
   const [description, setDescription] = useState("");
@@ -21,16 +23,16 @@ export default function TerimaBarangContent() {
   const [isConfirmOpen, setIsConfirmOpen] = useState(false); // 🔹 Confirmation Modal State
   const [isExistingItem, setIsExistingItem] = useState<boolean | null>(null); // 🔹 Tracks if item exists
 
-  // Check if Item Exists in DB
+  // 🔹 Check if Item Exists in DB
   const checkItemExists = async (itemId: string): Promise<boolean> => {
     try {
       const response = await fetch("http://localhost:8080/api/items");
-      
+
       if (!response.ok) {
         throw new Error("Failed to fetch items");
       }
 
-      const data = await response.json(); 
+      const data = await response.json();
       const items = data.data || [];
 
       return items.some((item: any) => item.item_id === itemId);
@@ -40,7 +42,7 @@ export default function TerimaBarangContent() {
     }
   };
 
-  // Open Confirmation Modal
+  // 🔹 Open Confirmation Modal
   const handleOpenConfirm = async () => {
     if (!itemId || !quantity || !description) {
       setMessage("❌ All fields are required.");
@@ -54,7 +56,7 @@ export default function TerimaBarangContent() {
     setIsConfirmOpen(true);
   };
 
-  // Confirm and Submit Inventory Reception
+  // 🔹 Confirm and Submit Inventory Reception
   const handleConfirmReceive = async () => {
     setIsConfirmOpen(false); // Close the modal
 
@@ -62,6 +64,10 @@ export default function TerimaBarangContent() {
       quantity: Number(quantity),
       description,
     };
+
+    if (isExistingItem) {
+      inventoryData.location = "inventory_gudang"; // 🔹 Add location only for PUT requests
+    }
 
     try {
       const method = isExistingItem ? "PUT" : "POST"; // Use PUT if existing, else POST
