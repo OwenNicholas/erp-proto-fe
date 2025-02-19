@@ -94,12 +94,12 @@ export default function TelusuriItemContent() {
     },
     {
       accessorKey: "item_id",
-      header: "Item ID",
+      header: "Kode Barang",
       cell: ({ row }) => <div>{row.getValue("item_id")}</div>,
     },
     {
       accessorKey: "description",
-      header: "Description",
+      header: "Keterangan",
       cell: ({ row }) => <div className="capitalize">{row.getValue("description")}</div>,
     },
     {
@@ -109,7 +109,7 @@ export default function TelusuriItemContent() {
     },
     {
       accessorKey: "price",
-      header: "Price",
+      header: "Harga",
       cell: ({ row }) => {
         const amount = parseFloat(row.getValue("price"));
         const formatted = new Intl.NumberFormat("id-ID", {
@@ -138,7 +138,7 @@ export default function TelusuriItemContent() {
     },
     {
       accessorKey: "transaction_id",
-      header: "Transaction ID",
+      header: "No. Faktur",
       cell: ({ row }) => <div className="text-center">{row.getValue("transaction_id")}</div>,
     },
   ];

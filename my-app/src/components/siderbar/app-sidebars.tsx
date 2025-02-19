@@ -54,14 +54,6 @@ const data = {
         { title: "Terima Barang", url: "#" },
       ],
     },
-    {
-      title: "Laporan",
-      url: "#",
-      icon: AiFillBook,
-      items: [
-        { title: "Laporan Harian", url: "#" },
-      ],
-    },
   ],
 };
 
