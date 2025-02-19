@@ -97,7 +97,7 @@ export default function PindahanContent() {
         <label className="block text-sm font-medium">Dari</label>
         <Select onValueChange={setSource}>
           <SelectTrigger className="w-full mt-1">
-            <SelectValue placeholder="Select Source" />
+            <SelectValue placeholder="Pillih Sumber" />
           </SelectTrigger>
           <SelectContent>
             <SelectGroup>
@@ -115,7 +115,7 @@ export default function PindahanContent() {
         <label className="block text-sm font-medium">Ke</label>
         <Select onValueChange={setDestination}>
           <SelectTrigger className="w-full mt-1">
-            <SelectValue placeholder="Select Destination" />
+            <SelectValue placeholder="Pillih Destinasi" />
           </SelectTrigger>
           <SelectContent>
             <SelectGroup>
@@ -130,10 +130,10 @@ export default function PindahanContent() {
 
       {/* 🔹 Item ID */}
       <div className="mb-4">
-        <label className="block text-sm font-medium">Item ID</label>
+        <label className="block text-sm font-medium">Kode Barang</label>
         <Input
           type="text"
-          placeholder="Enter Item ID"
+          placeholder="Isi Kode Barang..."
           value={itemId}
           onChange={(e) => setItemId(e.target.value)}
           className="w-full mt-1"
@@ -145,7 +145,7 @@ export default function PindahanContent() {
         <label className="block text-sm font-medium">Quantity</label>
         <Input
           type="number"
-          placeholder="Enter Quantity"
+          placeholder="Isi Quantity..."
           value={quantity}
           onChange={(e) => setQuantity(e.target.value ? Number(e.target.value) : "")}
           className="w-full mt-1"
@@ -154,10 +154,10 @@ export default function PindahanContent() {
 
       {/* 🔹 Description */}
       <div className="mb-4">
-        <label className="block text-sm font-medium">Description</label>
+        <label className="block text-sm font-medium">Keterangan</label>
         <Input
           type="text"
-          placeholder="Enter Description"
+          placeholder="Isi Keterangan..."
           value={description}
           onChange={(e) => setDescription(e.target.value)}
           className="w-full mt-1"

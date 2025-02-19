@@ -18,7 +18,6 @@ import {
 import DashboardContent from "@/components/pages/DashboardContent";
 import PenjualanTokoContent from "@/components/pages/PenjualanTokoContent";
 import PenjualanTiktokContent from "@/components/pages/PenjualanTiktokContent";
-import HistoryPenjualanContent from "@/components/pages/HistoryPenjualanContent";
 import PindahanContent from "@/components/pages/Pindahan";
 import TelusuriItemContent from "@/components/pages/TelusuriItemContent";
 import TransactionContent from "@/components/pages/TransactionContent";
@@ -32,13 +31,11 @@ const sectionComponents: Record<string, JSX.Element> = {
   Dashboard: <DashboardContent />,
   "Penjualan Toko": <PenjualanTokoContent />,
   "Penjualan TikTok": <PenjualanTiktokContent />, 
-  "History Penjualan": <HistoryPenjualanContent />,
   "Telusuri Item lewat ID": <TelusuriItemContent />, 
   "History Transaksi": <TransactionContent />, 
   "Pindahan": <PindahanContent />, 
   "Retur Barang": <ReturBarangContent />, 
   "Terima Barang": <TerimaBarangContent />,
-  "Laporan Harian": <div className="p-4 text-lg font-semibold">Laporan Harian Content</div>, 
 };
 
 export type SectionKey = keyof typeof sectionComponents & string

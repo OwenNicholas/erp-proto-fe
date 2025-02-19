@@ -89,7 +89,7 @@ export default function TelusuriItemContent() {
   const columns: ColumnDef<Sale>[] = [
     {
       accessorKey: "sale_id",
-      header: "Sale ID",
+      header: "No. Penjualan",
       cell: ({ row }) => <div>{row.getValue("sale_id")}</div>,
     },
     {
@@ -133,7 +133,7 @@ export default function TelusuriItemContent() {
     },
     {
       accessorKey: "discount_per_item",
-      header: "Discount",
+      header: "Discount (Rp)",
       cell: ({ row }) => <div className="text-center">{row.getValue("discount_per_item")}</div>,
     },
     {
@@ -167,7 +167,7 @@ export default function TelusuriItemContent() {
         {/* Search Bar for Filtering */}
         <div className="flex items-center py-4">
           <Input
-            placeholder="Cari Lewat Item ID..."
+            placeholder="Telusuri Penjualan dengan Kode Barang..."
             value={searchQuery}
             onChange={(event) => setSearchQuery(event.target.value)}
             className="max-w-sm"

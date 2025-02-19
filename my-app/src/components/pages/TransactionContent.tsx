@@ -30,7 +30,7 @@ import {
   TableRow,
 } from "@/components/ui/table";
 
-// 🔹 Define Transaction Data Type
+// Transaction Data Type
 export type Transaction = {
   transaction_id: number;
   discount_type: string;
@@ -94,17 +94,17 @@ export default function TransactionHistoryContent() {
   const columns: ColumnDef<Transaction>[] = [
     {
       accessorKey: "transaction_id",
-      header: "Transaction ID",
+      header: "No. Faktur",
       cell: ({ row }) => <div>{row.getValue("transaction_id")}</div>,
     },
     {
       accessorKey: "customer_name",
-      header: "Customer Name",
+      header: "Nama Pembeli",
       cell: ({ row }) => <div className="capitalize">{row.getValue("customer_name")}</div>,
     },
     {
       accessorKey: "discount_type",
-      header: "Discount Type",
+      header: "Tipe Discount",
       cell: ({ row }) => <div className="text-center">{row.getValue("discount_type")}</div>,
     },
     {
@@ -131,7 +131,7 @@ export default function TransactionHistoryContent() {
     },
     {
       accessorKey: "timestamp",
-      header: "Date & Time",
+      header: "Tanggal & Waktu",
       cell: ({ row }) => (
         <div className="text-center">
           {new Date(row.getValue("timestamp")).toLocaleString()}

@@ -73,10 +73,10 @@ export default function ReturBarangContent() {
 
       {/* 🔹 Item ID */}
       <div className="mb-4">
-        <label className="block text-sm font-medium">Item ID</label>
+        <label className="block text-sm font-medium">Kode Barang</label>
         <Input
           type="text"
-          placeholder="Enter Item ID"
+          placeholder="Isi Kode Barang..."
           value={itemId}
           onChange={(e) => setItemId(e.target.value)}
           className="w-full mt-1"
@@ -88,7 +88,7 @@ export default function ReturBarangContent() {
         <label className="block text-sm font-medium">Quantity</label>
         <Input
           type="number"
-          placeholder="Enter Quantity"
+          placeholder="Isi Quantity..."
           value={quantity}
           onChange={(e) => setQuantity(e.target.value ? Number(e.target.value) : "")}
           className="w-full mt-1"
@@ -97,10 +97,10 @@ export default function ReturBarangContent() {
 
       {/* 🔹 Description */}
       <div className="mb-4">
-        <label className="block text-sm font-medium">Deskripsi</label>
+        <label className="block text-sm font-medium">Keterangan</label>
         <Input
           type="text"
-          placeholder="Enter Description"
+          placeholder="Isi Keterangan..."
           value={description}
           onChange={(e) => setDescription(e.target.value)}
           className="w-full mt-1"

@@ -252,7 +252,7 @@ export default function PenjualanTiktokContent() {
             }}
           >
             <SelectTrigger className="w-[180px]">
-              <SelectValue placeholder="Options" />
+              <SelectValue placeholder="Pillihan" />
             </SelectTrigger>
             <SelectContent>
               <SelectGroup>

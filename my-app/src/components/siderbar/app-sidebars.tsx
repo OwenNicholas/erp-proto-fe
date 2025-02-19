@@ -2,13 +2,9 @@
 import { AiFillDollarCircle, AiOutlineHistory, AiOutlineTruck, AiFillBook } from "react-icons/ai";
 import { FaStore } from "react-icons/fa";
 import * as React from "react";
-import { SectionKey } from "@/app/dashboard/dashboard"; 
-import {
-  GalleryVerticalEnd,
-} from "lucide-react";
-
 import { NavMain } from "@/components/siderbar/nav-mains";
 import { NavUser } from "@/components/siderbar/nav-user";
+import { useRouter } from "next/navigation";
 import {
   Sidebar,
   SidebarContent,
@@ -20,7 +16,7 @@ import {
 // Sidebar menu items
 const data = {
   user: {
-    name: "shadcn",
+    name: "user",
     email: "m@example.com",
     avatar: "/avatars/shadcn.jpg",
   },
@@ -58,9 +54,13 @@ const data = {
 };
 
 export function AppSidebar({ onSubmenuChange }: { onSubmenuChange: (section: string) => void }) {
+  const router = useRouter();
   return (
     <Sidebar collapsible="icon">
-      <SidebarHeader className="flex flex-col items-center py-4 border-b border-gray-200">
+      <SidebarHeader
+        className="flex flex-col items-center py-4 border-b border-gray-200 cursor-pointer hover:bg-gray-100 transition-all"
+        onClick={() => onSubmenuChange("Dashboard")} // Set Dashboard as active section
+      >
       <div className="flex items-center gap-2">
         <FaStore className="text-2xl text-gray-900" />
         <h2 className="text-xl font-semibold text-gray-900 tracking-wide">
