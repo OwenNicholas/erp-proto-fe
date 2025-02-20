@@ -2,7 +2,6 @@
 
 import React, { useState } from "react";
 import { useRouter } from "next/navigation";
-import axios from "axios";
 import { cn } from "@/lib/utils"; 
 import { Button } from "@/components/ui/button";
 import {
@@ -15,6 +14,11 @@ import {
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 
+// Define API response type
+interface LoginResponse {
+  role: string;
+}
+
 export function LoginForm({ className, ...props }: { className?: string }) {
   const [username, setUsername] = useState<string>("");
   const [password, setPassword] = useState<string>("");
@@ -22,8 +26,6 @@ export function LoginForm({ className, ...props }: { className?: string }) {
   const [message, setMessage] = useState<string>("");
 
   const router = useRouter();
-
-
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -38,60 +40,43 @@ export function LoginForm({ className, ...props }: { className?: string }) {
         headers: {
           "Content-Type": "application/json",
         },
-        body: JSON.stringify({
-          username,
-          password,
-        }),
+        body: JSON.stringify({ username, password }),
       });
 
       if (response.ok) {
-        const data = await response.json(); // ✅ Parse response body as JSON
-        const { role } = data; // ✅ Now you can extract role
+        const data: LoginResponse = await response.json(); // ✅ Typed response
+        const { role } = data;
 
         setMessage("Login successful!");
-        //localStorage.setItem("username", username);
-        //localStorage.setItem("role", role); // Store the role in localStorage if needed for later
+        localStorage.setItem("username", username);
+        localStorage.setItem("role", role);
+
         // Route based on role
         if (role === "admin") {
-        router.push("/admin"); // Navigate to admin page
+          router.push("/admin");
         } else if (role === "user") {
-        router.push("/dashboard"); // Navigate to dashboard
+          router.push("/dashboard");
         } else {
-        setError("Unknown role. Please contact support.");
+          setError("Unknown role. Please contact support.");
         }
       } else {
         setError("Unexpected response from the server.");
       }
-    } catch (error: any) {
-      if (error.response) {
-        if (error.response.status === 400) {
-          setError("Invalid input. Please check your details.");
-        } else if (error.response.status === 401) {
-          setError("Invalid username or password");
-        } else if (error.response.status === 404) {
-          setError("User not found");
-        } else {
-          setError(`Error: ${error.response.data.error || "Unknown error"}`);
-        }
+    } catch (error: unknown) {
+      if (error instanceof Error) {
+        setError(`An error occurred: ${error.message}`);
       } else {
-        setError("An error occurred. Please try again later.");
+        setError("An unexpected error occurred.");
       }
     }
   };
-
-
-
 
   return (
     <div className={cn("flex flex-col gap-6", className)} {...props}>
       <Card>
         <CardHeader>
-          <CardTitle className="text-2xl">
-            {"Login"}
-          </CardTitle>
-          <CardDescription>
-            {"Masukan username dan password anda untuk login"}
-          </CardDescription>
+          <CardTitle className="text-2xl">Login</CardTitle>
+          <CardDescription>Masukan username dan password anda untuk login</CardDescription>
         </CardHeader>
         <CardContent>
           <form onSubmit={handleSubmit}>
@@ -117,7 +102,7 @@ export function LoginForm({ className, ...props }: { className?: string }) {
                 />
               </div>
               <Button type="submit" className="w-full">
-                {"Login"}
+                Login
               </Button>
             </div>
           </form>

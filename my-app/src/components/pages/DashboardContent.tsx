@@ -16,14 +16,29 @@ import {
 import {
   ChartConfig,
   ChartContainer,
-  ChartTooltip,
   ChartTooltipContent,
 } from "@/components/ui/chart";
 
+// Define expected API response types
+interface InventoryItem {
+  item_id: string;
+  quantity: number;
+  description: string;
+  price: number;
+}
+
+interface InventoryResponse {
+  meta: {
+    code: number;
+    status: string;
+  };
+  data: InventoryItem[];
+}
+
 const DashboardContent = () => {
-  const [tokoData, setTokoData] = useState([]);
-  const [gudangData, setGudangData] = useState([]);
-  const [tiktokData, setTiktokData] = useState([]);
+  const [tokoData, setTokoData] = useState<InventoryItem[]>([]);
+  const [gudangData, setGudangData] = useState<InventoryItem[]>([]);
+  const [tiktokData, setTiktokData] = useState<InventoryItem[]>([]);
 
   useEffect(() => {
     const fetchData = async () => {
@@ -34,9 +49,9 @@ const DashboardContent = () => {
           fetch("http://localhost:8080/api/inventory/tiktok"),
         ]);
 
-        const tokoJson = await tokoRes.json();
-        const gudangJson = await gudangRes.json();
-        const tiktokJson = await tiktokRes.json();
+        const tokoJson: InventoryResponse = await tokoRes.json();
+        const gudangJson: InventoryResponse = await gudangRes.json();
+        const tiktokJson: InventoryResponse = await tiktokRes.json();
 
         setTokoData(tokoJson.data || []);
         setGudangData(gudangJson.data || []);
@@ -49,7 +64,7 @@ const DashboardContent = () => {
     fetchData();
   }, []);
 
-  const formatChartData = (data: any[]) =>
+  const formatChartData = (data: InventoryItem[]) =>
     data
       .sort((a, b) => a.item_id.localeCompare(b.item_id)) // Sort alphabetically
       .map((item) => ({
@@ -87,7 +102,7 @@ const DashboardContent = () => {
                     type="category"
                     tick={{ fontSize: 12 }}
                     tickMargin={10}
-                    width={80} // Increase width for better visibility
+                    width={100} // Increase width for better visibility
                   />
                   <Tooltip content={<ChartTooltipContent />} />
                   <Bar dataKey="quantity" fill="var(--color-desktop)" radius={5} barSize={12} />
@@ -125,7 +140,7 @@ const DashboardContent = () => {
                     type="category"
                     tick={{ fontSize: 12 }}
                     tickMargin={10}
-                    width={80}
+                    width={100}
                   />
                   <Tooltip content={<ChartTooltipContent />} />
                   <Bar dataKey="quantity" fill="var(--color-desktop)" radius={5} barSize={12} />
@@ -163,7 +178,7 @@ const DashboardContent = () => {
                     type="category"
                     tick={{ fontSize: 12 }}
                     tickMargin={10}
-                    width={80}
+                    width={100}
                   />
                   <Tooltip content={<ChartTooltipContent />} />
                   <Bar dataKey="quantity" fill="var(--color-desktop)" radius={5} barSize={12} />

@@ -24,7 +24,17 @@ import {
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { AiOutlinePlus, AiOutlineMinus } from "react-icons/ai";
-import { Dialog, DialogContent, DialogHeader, DialogFooter, DialogTitle } from "@/components/ui/dialog";
+import { Dialog, DialogContent, DialogFooter, DialogTitle } from "@/components/ui/dialog";
+
+
+// Define the InventoryItem type
+interface InventoryItem {
+  item_id: string;
+  price: number;
+  description: string;
+  quantity: string;
+}
+
 
 export default function PenjualanTiktokContent() {
   const [invoices, setInvoices] = useState([
@@ -117,7 +127,7 @@ export default function PenjualanTiktokContent() {
       updatedInvoices[index].invoice = value;
 
       // Filter inventory to show matching items
-      const filtered = inventory.filter((item: any) =>
+      const filtered = inventory.filter((item: InventoryItem) =>
         item.item_id.toLowerCase().includes(value.toLowerCase())
       );
       setFilteredItems(filtered);
@@ -128,7 +138,7 @@ export default function PenjualanTiktokContent() {
   };
 
   // Handle selection from dropdown and autofill hargaSatuan
-  const handleSelectItem = (index: number, item: any) => {
+  const handleSelectItem = (index: number, item: InventoryItem) => {
     setInvoices((prev) => {
       const updatedInvoices = [...prev];
       updatedInvoices[index].invoice = item.item_id;
@@ -303,13 +313,13 @@ export default function PenjualanTiktokContent() {
                   />
                   {focusedRow === index && filteredItems.length > 0 &&(
                     <div className="absolute bg-white border shadow-md w-full max-h-40 overflow-y-auto z-10">
-                      {filteredItems.map((item: any) => (
+                      {filteredItems.map((item: InventoryItem) => (
                         <div
                           key={item.item_id}
                           className="p-2 hover:bg-gray-200 cursor-pointer"
                           onClick={() => handleSelectItem(index, item)}
                         >
-                          {item.item_id} - {item.description} ({item.stock} left)
+                          {item.item_id} - {item.description} ({item.quantity} left)
                         </div>
                       ))}
                     </div>

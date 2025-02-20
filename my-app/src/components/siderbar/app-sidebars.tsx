@@ -1,10 +1,9 @@
 "use client";
-import { AiFillDollarCircle, AiOutlineHistory, AiOutlineTruck, AiFillBook } from "react-icons/ai";
+import { AiFillDollarCircle, AiOutlineHistory, AiOutlineTruck} from "react-icons/ai";
 import { FaStore } from "react-icons/fa";
 import * as React from "react";
 import { NavMain } from "@/components/siderbar/nav-mains";
 import { NavUser } from "@/components/siderbar/nav-user";
-import { useRouter } from "next/navigation";
 import {
   Sidebar,
   SidebarContent,
@@ -54,7 +53,6 @@ const data = {
 };
 
 export function AppSidebar({ onSubmenuChange }: { onSubmenuChange: (section: string) => void }) {
-  const router = useRouter();
   return (
     <Sidebar collapsible="icon">
       <SidebarHeader

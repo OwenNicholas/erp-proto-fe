@@ -84,7 +84,6 @@ export function NavMain({
                             href={subItem.url}
                             onClick={(e) => {
                               e.preventDefault();
-                              const validSection = subItem.title;
                               onSubmenuChange(subItem.title as SectionKey); // Update breadcrumb with submenu title
                             }}
                           >

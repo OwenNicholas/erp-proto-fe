@@ -37,7 +37,7 @@ export default function TerimaBarangContent() {
       const data = await response.json();
       const items = data.data || [];
 
-      return items.some((item: any) => item.item_id === itemId);
+      return items.some((item: InventoryData) => item.item_id === itemId);
     } catch (error) {
       console.error("Error checking item:", error);
       return false; // Assume item does not exist if there's an error
