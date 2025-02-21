@@ -18,6 +18,7 @@ import {
 import DashboardContent from "@/components/pages/DashboardContent";
 import PenjualanTokoContent from "@/components/pages/PenjualanTokoContent";
 import PenjualanTiktokContent from "@/components/pages/PenjualanTiktokContent";
+import PenjualanGudangContent from "@/components/pages/PenjualanGudangContent";
 import PindahanContent from "@/components/pages/Pindahan";
 import TelusuriItemContent from "@/components/pages/TelusuriItemContent";
 import TransactionContent from "@/components/pages/TransactionContent";
@@ -31,6 +32,7 @@ const sectionComponents: Record<string, JSX.Element> = {
   Dashboard: <DashboardContent />,
   "Penjualan Toko": <PenjualanTokoContent />,
   "Penjualan TikTok": <PenjualanTiktokContent />, 
+  "Penjualan Gudang": <PenjualanGudangContent />,
   "Telusuri Item lewat ID": <TelusuriItemContent />, 
   "History Transaksi": <TransactionContent />, 
   "Pindahan": <PindahanContent />, 

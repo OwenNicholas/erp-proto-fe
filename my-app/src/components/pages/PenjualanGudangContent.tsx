@@ -36,7 +36,7 @@ interface InventoryItem {
 }
 
 
-export default function PenjualanTokoContent() {
+export default function PenjualanGudangContent() {
   const [invoices, setInvoices] = useState([
     { invoice: "", hargaSatuan: "Rp.0", jumlah: "1", discountPerItem: "0", total: "Rp.0", description: "", stock: "" },
   ]);
@@ -59,7 +59,7 @@ export default function PenjualanTokoContent() {
 
   const fetchInventory = async () => {
     try {
-      const response = await fetch("http://localhost:8080/api/inventory/toko");
+      const response = await fetch("http://localhost:8080/api/inventory/gudang");
       if (!response.ok) {
         throw new Error("Failed to fetch inventory");
       }
@@ -228,7 +228,7 @@ export default function PenjualanTokoContent() {
       payment_id: parseInt(paymentMethod),
       payment_status: paymentStatus,
       customer_name: customerName,
-      location: "toko",
+      location: "gudang",
     };
     console.log("🔹 Payload being sent:", JSON.stringify(payload, null, 2));
 

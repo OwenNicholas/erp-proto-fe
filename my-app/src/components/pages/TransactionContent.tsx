@@ -37,6 +37,7 @@ export type Transaction = {
   discount_percent: number;
   total_discount: number;
   payment_id: number;
+  payment_status: string;
   customer_name: string;
   timestamp: string;
 };
@@ -86,7 +87,8 @@ export default function TransactionHistoryContent() {
     () =>
       data.filter((transaction) =>
         transaction.customer_name.toLowerCase().includes(searchQuery.toLowerCase())
-      ),
+      )
+      .sort((a, b) => b.transaction_id - a.transaction_id),
     [data, searchQuery]
   );
 
@@ -130,6 +132,11 @@ export default function TransactionHistoryContent() {
       cell: ({ row }) => <div className="text-center">{row.getValue("payment_id")}</div>,
     },
     {
+      accessorKey: "payment_status",
+      header: "Payment Status",
+      cell: ({ row }) => <div className="text-center">{row.getValue("payment_status")}</div>,
+    },
+    {
       accessorKey: "timestamp",
       header: "Tanggal & Waktu",
       cell: ({ row }) => (
@@ -153,6 +160,7 @@ export default function TransactionHistoryContent() {
       sorting,
       columnVisibility,
     },
+    initialState: { pagination: { pageSize: 50 } },
   });
 
   return (

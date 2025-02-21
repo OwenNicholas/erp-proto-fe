@@ -1,23 +1,18 @@
 "use client";
 
 import React, { useEffect, useState } from "react";
-import { TrendingUp } from "lucide-react";
-import { Bar, BarChart, XAxis, YAxis, Tooltip, ResponsiveContainer } from "recharts";
-
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardFooter,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
-
-import {
-  ChartConfig,
-  ChartContainer,
-  ChartTooltipContent,
-} from "@/components/ui/chart";
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Input } from "@/components/ui/input";
+import { Button } from "@/components/ui/button";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 
 // Define expected API response types
 interface InventoryItem {
@@ -36,166 +31,178 @@ interface InventoryResponse {
 }
 
 const DashboardContent = () => {
-  const [tokoData, setTokoData] = useState<InventoryItem[]>([]);
-  const [gudangData, setGudangData] = useState<InventoryItem[]>([]);
-  const [tiktokData, setTiktokData] = useState<InventoryItem[]>([]);
+  const [inventoryType, setInventoryType] = useState<"toko" | "gudang" | "tiktok">("toko"); // Default to Toko
+  const [inventoryData, setInventoryData] = useState<InventoryItem[]>([]);
+  const [searchQuery, setSearchQuery] = useState<string>("");
+
+  // Koreksi Dialog States
+  const [isDialogOpen, setIsDialogOpen] = useState<boolean>(false);
+  const [correctionItemId, setCorrectionItemId] = useState<string>("");
+  const [correctionQuantity, setCorrectionQuantity] = useState<number | null>(null);
+  const [correctionLocation, setCorrectionLocation] = useState<"toko" | "gudang" | "tiktok">("toko");
+  const [errorMessage, setErrorMessage] = useState<string | null>(null);
 
   useEffect(() => {
-    const fetchData = async () => {
-      try {
-        const [tokoRes, gudangRes, tiktokRes] = await Promise.all([
-          fetch("http://localhost:8080/api/inventory/toko"),
-          fetch("http://localhost:8080/api/inventory/gudang"),
-          fetch("http://localhost:8080/api/inventory/tiktok"),
-        ]);
+    fetchInventory();
+  }, [inventoryType]); // Fetch when inventory type changes
 
-        const tokoJson: InventoryResponse = await tokoRes.json();
-        const gudangJson: InventoryResponse = await gudangRes.json();
-        const tiktokJson: InventoryResponse = await tiktokRes.json();
-
-        setTokoData(tokoJson.data || []);
-        setGudangData(gudangJson.data || []);
-        setTiktokData(tiktokJson.data || []);
-      } catch (error) {
-        console.error("Error fetching data:", error);
+  const fetchInventory = async () => {
+    try {
+      const response = await fetch(`http://localhost:8080/api/inventory/${inventoryType}`);
+      if (!response.ok) {
+        throw new Error("Failed to fetch inventory");
       }
-    };
+      const data: InventoryResponse = await response.json();
+      setInventoryData(data.data || []);
+    } catch (error) {
+      console.error("Error fetching data:", error);
+    }
+  };
 
-    fetchData();
-  }, []);
+  // Compute total value (Quantity × Price)
+  const computeTotalValue = (item: InventoryItem) => {
+    return item.quantity * item.price;
+  };
 
-  const formatChartData = (data: InventoryItem[]) =>
-    data
-      .sort((a, b) => a.item_id.localeCompare(b.item_id)) // Sort alphabetically
-      .map((item) => ({
-        name: item.item_id, // Item ID for Y-axis
-        quantity: item.quantity, // Quantity for X-axis
-      }));
+  // Filter inventory based on search query
+  const filteredInventory = inventoryData.filter((item) =>
+    item.item_id.toLowerCase().includes(searchQuery.toLowerCase()) ||
+    item.description.toLowerCase().includes(searchQuery.toLowerCase())
+  );
 
-  const chartConfig: ChartConfig = {
-    quantity: {
-      label: "Stock Quantity",
-      color: "hsl(var(--chart-1))",
-    },
+  // 🔹 Handle Koreksi (Inventory Correction)
+  const handleCorrectionSubmit = async () => {
+    if (!correctionItemId || correctionQuantity === null) {
+      setErrorMessage("Item ID dan Quantity harus diisi!");
+      return;
+    }
+
+    try {
+      const response = await fetch(`http://localhost:8080/api/inventory/update`, {
+        method: "PUT",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          item_id: correctionItemId,
+          quantity: correctionQuantity,
+          location: correctionLocation,
+        }),
+      });
+
+      if (!response.ok) {
+        throw new Error("Gagal memperbarui inventory");
+      }
+
+      // ✅ Refresh Inventory Data
+      fetchInventory();
+      setIsDialogOpen(false);
+      setCorrectionItemId("");
+      setCorrectionQuantity(null);
+      setErrorMessage(null);
+    } catch (error) {
+      console.error("Error updating inventory:", error);
+      setErrorMessage("Gagal memperbarui inventory. Coba lagi.");
+    }
   };
 
   return (
     <div className="p-4 text-lg font-semibold">
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-        {/* Toko Inventory */}
-        <Card>
-          <CardHeader>
-            <CardTitle>Inventory Toko</CardTitle>
-            <CardDescription>Stock availability in Toko</CardDescription>
-          </CardHeader>
-          <CardContent>
-            <ChartContainer config={chartConfig}>
-              <ResponsiveContainer width="100%" height={400}>
-                <BarChart
-                  data={formatChartData(tokoData)}
-                  layout="vertical"
-                  margin={{ left: 50 }}
-                >
-                  <XAxis type="number" hide />
-                  <YAxis
-                    dataKey="name"
-                    type="category"
-                    tick={{ fontSize: 12 }}
-                    tickMargin={10}
-                    width={100} // Increase width for better visibility
-                  />
-                  <Tooltip content={<ChartTooltipContent />} />
-                  <Bar dataKey="quantity" fill="var(--color-desktop)" radius={5} barSize={12} />
-                </BarChart>
-              </ResponsiveContainer>
-            </ChartContainer>
-          </CardContent>
-          <CardFooter className="flex-col items-start gap-2 text-sm">
-            <div className="flex gap-2 font-medium leading-none">
-              Updated stock levels <TrendingUp className="h-4 w-4" />
-            </div>
-            <div className="leading-none text-muted-foreground">
-              Showing current stock availability
-            </div>
-          </CardFooter>
-        </Card>
+      {/* Koreksi Dialog */}
+      <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
+        <DialogTrigger asChild>
+          <Button variant="outline" className="mb-4">Koreksi Inventory</Button>
+        </DialogTrigger>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Koreksi Inventory</DialogTitle>
+          </DialogHeader>
 
-        {/* Gudang Inventory */}
-        <Card>
-          <CardHeader>
-            <CardTitle>Inventory Gudang</CardTitle>
-            <CardDescription>Stock levels in Gudang</CardDescription>
-          </CardHeader>
-          <CardContent>
-            <ChartContainer config={chartConfig}>
-              <ResponsiveContainer width="100%" height={400}>
-                <BarChart
-                  data={formatChartData(gudangData)}
-                  layout="vertical"
-                  margin={{ left: 50 }}
-                >
-                  <XAxis type="number" hide />
-                  <YAxis
-                    dataKey="name"
-                    type="category"
-                    tick={{ fontSize: 12 }}
-                    tickMargin={10}
-                    width={100}
-                  />
-                  <Tooltip content={<ChartTooltipContent />} />
-                  <Bar dataKey="quantity" fill="var(--color-desktop)" radius={5} barSize={12} />
-                </BarChart>
-              </ResponsiveContainer>
-            </ChartContainer>
-          </CardContent>
-          <CardFooter className="flex-col items-start gap-2 text-sm">
-            <div className="flex gap-2 font-medium leading-none">
-              Updated stock levels <TrendingUp className="h-4 w-4" />
-            </div>
-            <div className="leading-none text-muted-foreground">
-              Showing current stock availability
-            </div>
-          </CardFooter>
-        </Card>
+          {/* Input Fields */}
+          <div className="space-y-4">
+            <Input
+              placeholder="Item ID"
+              value={correctionItemId}
+              onChange={(e) => setCorrectionItemId(e.target.value)}
+            />
+            <Input
+              type="number"
+              placeholder="Quantity"
+              value={correctionQuantity ?? ""}
+              onChange={(e) => setCorrectionQuantity(Number(e.target.value))}
+            />
+            <Select onValueChange={(value) => setCorrectionLocation(value as "toko" | "gudang" | "tiktok")} value={correctionLocation}>
+              <SelectTrigger className="w-full">
+                <SelectValue placeholder="Pilih Lokasi" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="toko">Toko</SelectItem>
+                <SelectItem value="gudang">Gudang</SelectItem>
+                <SelectItem value="tiktok">TikTok</SelectItem>
+              </SelectContent>
+            </Select>
+            {errorMessage && <div className="text-red-500">{errorMessage}</div>}
+          </div>
 
-        {/* TikTok Inventory */}
-        <Card>
-          <CardHeader>
-            <CardTitle>Inventory TikTok</CardTitle>
-            <CardDescription>Stock levels in TikTok inventory</CardDescription>
-          </CardHeader>
-          <CardContent>
-            <ChartContainer config={chartConfig}>
-              <ResponsiveContainer width="100%" height={400}>
-                <BarChart
-                  data={formatChartData(tiktokData)}
-                  layout="vertical"
-                  margin={{ left: 50 }}
-                >
-                  <XAxis type="number" hide />
-                  <YAxis
-                    dataKey="name"
-                    type="category"
-                    tick={{ fontSize: 12 }}
-                    tickMargin={10}
-                    width={100}
-                  />
-                  <Tooltip content={<ChartTooltipContent />} />
-                  <Bar dataKey="quantity" fill="var(--color-desktop)" radius={5} barSize={12} />
-                </BarChart>
-              </ResponsiveContainer>
-            </ChartContainer>
-          </CardContent>
-          <CardFooter className="flex-col items-start gap-2 text-sm">
-            <div className="flex gap-2 font-medium leading-none">
-              Updated stock levels <TrendingUp className="h-4 w-4" />
-            </div>
-            <div className="leading-none text-muted-foreground">
-              Showing current stock availability
-            </div>
-          </CardFooter>
-        </Card>
+          {/* Submit Button */}
+          <Button onClick={handleCorrectionSubmit} className="w-full mt-4">
+            Simpan Perubahan
+          </Button>
+        </DialogContent>
+      </Dialog>
+
+      {/* Dropdown Selector */}
+      <div className="flex justify-between items-center mb-4">
+        <Select onValueChange={(value) => setInventoryType(value as "toko" | "gudang" | "tiktok")} value={inventoryType}>
+          <SelectTrigger className="w-[200px]">
+            <SelectValue placeholder="Select Inventory" />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="toko">Toko</SelectItem>
+            <SelectItem value="gudang">Gudang</SelectItem>
+            <SelectItem value="tiktok">TikTok</SelectItem>
+          </SelectContent>
+        </Select>
+
+        {/* Search Input */}
+        <Input
+          placeholder="Cari pakai ID Barang ato Deskripsi..."
+          value={searchQuery}
+          onChange={(e) => setSearchQuery(e.target.value)}
+          className="w-[300px]"
+        />
       </div>
+
+      {/* Inventory Table */}
+      <Card>
+        <CardHeader>
+          <CardTitle>Inventory - {inventoryType.charAt(0).toUpperCase() + inventoryType.slice(1)}</CardTitle>
+        </CardHeader>
+        <CardContent>
+          <Table>
+            <TableHeader>
+              <TableRow>
+                <TableHead>ID Barang</TableHead>
+                <TableHead>Deskripsi</TableHead>
+                <TableHead>Quantity</TableHead>
+                <TableHead>Harga Satuan</TableHead>
+                <TableHead>Total Harga</TableHead>
+              </TableRow>
+            </TableHeader>
+            <TableBody>
+              {filteredInventory.map((item) => (
+                <TableRow key={item.item_id}>
+                  <TableCell>{item.item_id}</TableCell>
+                  <TableCell>{item.description}</TableCell>
+                  <TableCell>{item.quantity}</TableCell>
+                  <TableCell>Rp.{item.price.toLocaleString("id-ID")}</TableCell>
+                  <TableCell>Rp.{computeTotalValue(item).toLocaleString("id-ID")}</TableCell>
+                </TableRow>
+              ))}
+            </TableBody>
+          </Table>
+        </CardContent>
+      </Card>
     </div>
   );
 };

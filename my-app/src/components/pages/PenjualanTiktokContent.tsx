@@ -49,6 +49,7 @@ export default function PenjualanTiktokContent() {
   const [isPaymentDialogOpen, setIsPaymentDialogOpen] = useState(false);
   const [isConfirmDialogOpen, setIsConfirmDialogOpen] = useState(false);
   const [paymentMethod, setPaymentMethod] = useState("");
+  const [paymentStatus, setPaymentStatus] = useState("");
   const [customerName, setCustomerName] = useState("");
 
   // Fetch inventory on component mount
@@ -225,9 +226,11 @@ export default function PenjualanTiktokContent() {
       discount_percent: discountPercent,
       total_discount: totalDiscount,
       payment_id: parseInt(paymentMethod),
+      payment_status: paymentStatus,
       customer_name: customerName,
       location: "tiktok",
     };
+    console.log("🔹 Payload being sent:", JSON.stringify(payload, null, 2));
 
     try {
       const response = await fetch("http://localhost:8080/api/transactions", {
@@ -307,7 +310,7 @@ export default function PenjualanTiktokContent() {
                     value={invoice.invoice}
                     onChange={(e) => handleItemSearch(index, e.target.value)}
                     className="text-center"
-                    placeholder="Enter item ID"
+                    placeholder="Isi ID Barang..."
                     onFocus={() => setFocusedRow(index)} // Show dropdown only for this row
                     onBlur={() => setTimeout(() => setFocusedRow(null), 200)} // Hide after selection
                   />
@@ -365,17 +368,65 @@ export default function PenjualanTiktokContent() {
         </Table>
         <Button className="mt-4" onClick={handleProceedToPayment}>Proceed to Payment</Button>
 
-         {/* Payment Input Dialog */}
-      <Dialog open={isPaymentDialogOpen} onOpenChange={setIsPaymentDialogOpen}>
-        <DialogContent>
-          <DialogTitle>Enter Payment Details</DialogTitle>
-          <Input placeholder="Customer Name" value={customerName} onChange={(e) => setCustomerName(e.target.value)} />
-          <Input placeholder="Payment Method (ID)" value={paymentMethod} onChange={(e) => setPaymentMethod(e.target.value)} />
-          <DialogFooter>
-            <Button onClick={() => { setIsPaymentDialogOpen(false); setIsConfirmDialogOpen(true); }}>Confirm</Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
+            {/* Payment Input Dialog */}
+        <Dialog open={isPaymentDialogOpen} onOpenChange={setIsPaymentDialogOpen}>
+            <DialogContent>
+            <DialogTitle>Enter Payment Details</DialogTitle>
+
+            {/* Customer Name Input */}
+            <Input
+                placeholder="Customer Name"
+                value={customerName}
+                onChange={(e) => setCustomerName(e.target.value)}
+            />
+
+            {/* Payment Method Dropdown */}
+            <label className="block text-sm font-medium mt-2">Payment Method</label>
+            <Select onValueChange={setPaymentMethod}>
+                <SelectTrigger className="w-full mt-1">
+                <SelectValue placeholder="Pillih Metode Pembayaran" />
+                </SelectTrigger>
+                <SelectContent>
+                <SelectGroup>
+                    <SelectLabel>Metode Pembayaran</SelectLabel>
+                    <SelectItem value="1">Tukar</SelectItem>
+                    <SelectItem value="2">Tunai</SelectItem>
+                </SelectGroup>
+                </SelectContent>
+            </Select>
+
+            {/* Payment Status Dropdown */}
+            <label className="block text-sm font-medium mt-2">Status Pembayaran</label>
+            <Select onValueChange={setPaymentStatus}>
+                <SelectTrigger className="w-full mt-1">
+                <SelectValue placeholder="Pillih Status Pembayaran" />
+                </SelectTrigger>
+                <SelectContent>
+                <SelectGroup>
+                    <SelectLabel>Status</SelectLabel>
+                    <SelectItem value="lunas">Lunas</SelectItem>
+                    <SelectItem value="belom lunas">Belom Lunas</SelectItem>
+                </SelectGroup>
+                </SelectContent>
+            </Select>
+
+            {/* Confirm Button */}
+            <DialogFooter>
+                <Button
+                onClick={() => {
+                    if (!paymentMethod) {
+                    alert("❌ Please select a payment method.");
+                    return;
+                    }
+                    setIsPaymentDialogOpen(false);
+                    setIsConfirmDialogOpen(true);
+                }}
+                >
+                Confirm
+                </Button>
+            </DialogFooter>
+            </DialogContent>
+        </Dialog>
 
       {/* Final Confirmation Dialog */}
       <Dialog open={isConfirmDialogOpen} onOpenChange={setIsConfirmDialogOpen}>
