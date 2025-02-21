@@ -30,6 +30,9 @@ import {
   TableRow,
 } from "@/components/ui/table";
 
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter, DialogTrigger } from "@/components/ui/dialog";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+
 // Transaction Data Type
 export type Transaction = {
   transaction_id: number;
@@ -49,6 +52,10 @@ export default function TransactionHistoryContent() {
   const [sorting, setSorting] = React.useState<SortingState>([]);
   const [columnVisibility, setColumnVisibility] = React.useState<VisibilityState>({});
   const [error, setError] = React.useState<string | null>(null);
+
+  const [isDialogOpen, setIsDialogOpen] = React.useState(false);
+  const [selectedTransactionId, setSelectedTransactionId] = React.useState("");
+  const [newPaymentStatus, setNewPaymentStatus] = React.useState("");
 
   // Fetch transaction history from API
   React.useEffect(() => {
@@ -134,7 +141,7 @@ export default function TransactionHistoryContent() {
     },
     {
       accessorKey: "payment_status",
-      header: "Payment Status",
+      header: "Status Pembayaran",
       cell: ({ row }) => <div className="text-center">{row.getValue("payment_status")}</div>,
     },
     {
@@ -147,6 +154,40 @@ export default function TransactionHistoryContent() {
       ),
     },
   ];
+
+  const handleUpdatePaymentStatus = async () => {
+    if (!selectedTransactionId || !newPaymentStatus) {
+      alert("❌ Transaction ID dan Status Pembayaran harus dipilih!");
+      return;
+    }
+
+    try {
+      const response = await fetch(`http://localhost:8080/api/transactions/${selectedTransactionId}`, {
+        method: "PUT",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ payment_status: newPaymentStatus }),
+      });
+
+      if (!response.ok) {
+        throw new Error("Gagal memperbarui status pembayaran");
+      }
+
+      alert("✅ Status pembayaran berhasil diperbarui!");
+      setIsDialogOpen(false);
+      setSelectedTransactionId("");
+      setNewPaymentStatus("");
+
+      // Refresh Data
+      const updatedResponse = await fetch("http://localhost:8080/api/transactions");
+      const updatedResult = await updatedResponse.json();
+      setData(updatedResult.data);
+    } catch (error) {
+      console.error("Error updating payment status:", error);
+      alert("❌ Gagal memperbarui status pembayaran. Coba lagi.");
+    }
+  };
 
   // Create Table Instance
   const table = useReactTable({
@@ -169,6 +210,40 @@ export default function TransactionHistoryContent() {
       <div className="w-full max-w-4xl">
         {/* Display error message if fetch fails */}
         {error && <div className="text-red-500 text-center py-2">{error}</div>}
+
+        <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
+          <DialogTrigger asChild>
+            <Button variant="outline" className="mb-4">Koreksi Status Pembayaran</Button>
+          </DialogTrigger>
+          <DialogContent>
+            <DialogHeader>
+              <DialogTitle>Koreksi Status Pembayaran</DialogTitle>
+            </DialogHeader>
+
+            {/* Transaction ID Input */}
+            <Input
+              placeholder="Masukkan No. Faktur"
+              value={selectedTransactionId}
+              onChange={(e) => setSelectedTransactionId(e.target.value)}
+            />
+
+            {/* Payment Status Dropdown */}
+            <Select onValueChange={(value) => setNewPaymentStatus(value)} value={newPaymentStatus}>
+              <SelectTrigger className="w-full">
+                <SelectValue placeholder="Pilih Status Pembayaran" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="lunas">Lunas</SelectItem>
+                <SelectItem value="belum lunas">Belum Lunas</SelectItem>
+              </SelectContent>
+            </Select>
+
+            <DialogFooter>
+              <Button variant="outline" onClick={() => setIsDialogOpen(false)}>Batal</Button>
+              <Button className="bg-blue-600 text-white" onClick={handleUpdatePaymentStatus}>Konfirmasi</Button>
+            </DialogFooter>
+          </DialogContent>
+        </Dialog>
 
         {/* Search Bar for Filtering */}
         <div className="flex items-center py-4">

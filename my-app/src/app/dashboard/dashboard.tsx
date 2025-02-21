@@ -46,33 +46,33 @@ export default function DashboardPage() {
   const [activeSection, setActiveSection] = useState<SectionKey>("Dashboard");
 
   return (
-    <SidebarProvider>
-      <AppSidebar onSubmenuChange={(section) => setActiveSection(section as SectionKey)} />
-      <SidebarInset>
-        <header className="flex h-16 shrink-0 items-center gap-2 transition-[width,height] ease-linear group-has-[[data-collapsible=icon]]/sidebar-wrapper:h-12">
-          <div className="flex items-center gap-2 px-4">
-            <SidebarTrigger className="-ml-1" />
-            <Separator orientation="vertical" className="mr-2 h-4" />
-            <Breadcrumb>
-              <BreadcrumbList>
-                <BreadcrumbItem className="hidden md:block">Dashboard</BreadcrumbItem>
-                <BreadcrumbSeparator className="hidden md:block" />
-                <BreadcrumbItem>
-                  <BreadcrumbPage>{activeSection}</BreadcrumbPage>
-                </BreadcrumbItem>
-              </BreadcrumbList>
-            </Breadcrumb>
-          </div>
-        </header>
-        <div className="flex flex-1 flex-col gap-4 p-4 pt-0">
-          {sectionComponents[activeSection] || (
-            <div className="p-4 text-lg font-semibold text-gray-500">
-              No Content Available
+      <SidebarProvider>
+        <AppSidebar onSubmenuChange={(section) => setActiveSection(section as SectionKey)} />
+        <SidebarInset>
+          <header className="flex h-16 shrink-0 items-center gap-2 transition-[width,height] ease-linear group-has-[[data-collapsible=icon]]/sidebar-wrapper:h-12">
+            <div className="flex items-center gap-2 px-4">
+              <SidebarTrigger className="-ml-1" />
+              <Separator orientation="vertical" className="mr-2 h-4" />
+              <Breadcrumb>
+                <BreadcrumbList>
+                  <BreadcrumbItem className="hidden md:block">Dashboard</BreadcrumbItem>
+                  <BreadcrumbSeparator className="hidden md:block" />
+                  <BreadcrumbItem>
+                    <BreadcrumbPage>{activeSection}</BreadcrumbPage>
+                  </BreadcrumbItem>
+                </BreadcrumbList>
+              </Breadcrumb>
             </div>
-          )}
-        </div>
-      </SidebarInset>
-    </SidebarProvider>
+          </header>
+          <div className="flex flex-1 flex-col gap-4 p-4 pt-0">
+            {sectionComponents[activeSection] || (
+              <div className="p-4 text-lg font-semibold text-gray-500">
+                No Content Available
+              </div>
+            )}
+          </div>
+        </SidebarInset>
+      </SidebarProvider>
   );
 }
 

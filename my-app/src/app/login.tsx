@@ -44,22 +44,24 @@ export function LoginForm({ className, ...props }: { className?: string }) {
       });
 
       if (response.ok) {
-        const data: LoginResponse = await response.json(); // ✅ Typed response
-        const { role } = data;
-
+        const result = await response.json(); 
+        
+        const role = result.data?.role;  
+      
         setMessage("Login successful!");
         localStorage.setItem("username", username);
         localStorage.setItem("role", role);
-
+      
         // Route based on role
         if (role === "admin") {
           router.push("/admin");
         } else if (role === "user") {
           router.push("/dashboard");
         } else {
-          setError("Unknown role. Please contact support.");
+          setError(`Unknown role: "${role}". Please contact support.`);
         }
-      } else {
+      }
+      else {
         setError("Unexpected response from the server.");
       }
     } catch (error: unknown) {
