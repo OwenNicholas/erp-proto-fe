@@ -40,6 +40,7 @@ export type Transaction = {
   payment_status: string;
   customer_name: string;
   timestamp: string;
+  location: string;
 };
 
 export default function TransactionHistoryContent() {

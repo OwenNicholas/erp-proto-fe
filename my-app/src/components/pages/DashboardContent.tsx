@@ -12,7 +12,7 @@ import {
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, DialogFooter } from "@/components/ui/dialog";
 
 // Define expected API response types
 interface InventoryItem {
@@ -39,8 +39,9 @@ const DashboardContent = () => {
   const [isDialogOpen, setIsDialogOpen] = useState<boolean>(false);
   const [correctionItemId, setCorrectionItemId] = useState<string>("");
   const [correctionQuantity, setCorrectionQuantity] = useState<number | null>(null);
-  const [correctionLocation, setCorrectionLocation] = useState<"toko" | "gudang" | "tiktok">("toko");
+  const [correctionLocation, setCorrectionLocation] = useState<"toko" | "gudang" | "tiktok" | undefined>(undefined);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
+  const [isConfirmDialogOpen, setIsConfirmDialogOpen] = useState<boolean>(false);
 
   useEffect(() => {
     fetchInventory();
@@ -64,29 +65,39 @@ const DashboardContent = () => {
     return item.quantity * item.price;
   };
 
+
   // Filter inventory based on search query
   const filteredInventory = inventoryData.filter((item) =>
     item.item_id.toLowerCase().includes(searchQuery.toLowerCase()) ||
     item.description.toLowerCase().includes(searchQuery.toLowerCase())
   );
 
+  const handleOpenConfirmDialog = () => {
+    if (!correctionItemId || correctionQuantity === null || !correctionLocation) {
+      setErrorMessage("❌ Item ID, Quantity, dan Lokasi harus diisi!");
+      return;
+    }
+    setErrorMessage(null);
+    setIsConfirmDialogOpen(true);
+  };
+
   // 🔹 Handle Koreksi (Inventory Correction)
   const handleCorrectionSubmit = async () => {
+    setIsConfirmDialogOpen(false);
     if (!correctionItemId || correctionQuantity === null) {
       setErrorMessage("Item ID dan Quantity harus diisi!");
       return;
     }
 
     try {
-      const response = await fetch(`http://localhost:8080/api/inventory/update`, {
+      const response = await fetch(`http://localhost:8080/api/items/${correctionItemId}`, {
         method: "PUT",
         headers: {
           "Content-Type": "application/json",
         },
         body: JSON.stringify({
-          item_id: correctionItemId,
-          quantity: correctionQuantity,
           location: correctionLocation,
+          quantity: correctionQuantity,
         }),
       });
 
@@ -136,16 +147,16 @@ const DashboardContent = () => {
                 <SelectValue placeholder="Pilih Lokasi" />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="toko">Toko</SelectItem>
-                <SelectItem value="gudang">Gudang</SelectItem>
-                <SelectItem value="tiktok">TikTok</SelectItem>
+                <SelectItem value="inventory_toko">Toko</SelectItem>
+                <SelectItem value="inventory_gudang">Gudang</SelectItem>
+                <SelectItem value="inventory_tiktok">TikTok</SelectItem>
               </SelectContent>
             </Select>
             {errorMessage && <div className="text-red-500">{errorMessage}</div>}
           </div>
 
           {/* Submit Button */}
-          <Button onClick={handleCorrectionSubmit} className="w-full mt-4">
+          <Button onClick={handleOpenConfirmDialog} className="w-full mt-4">
             Simpan Perubahan
           </Button>
         </DialogContent>
@@ -172,6 +183,25 @@ const DashboardContent = () => {
           className="w-[300px]"
         />
       </div>
+
+      {/* Confirmation Dialog */}
+      <Dialog open={isConfirmDialogOpen} onOpenChange={setIsConfirmDialogOpen}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Konfirmasi Perubahan</DialogTitle>
+          </DialogHeader>
+          <p>Apakah Anda yakin ingin mengubah inventory dengan data berikut?</p>
+          <ul className="list-disc ml-6 text-sm text-gray-700">
+            <li><strong>Item ID:</strong> {correctionItemId}</li>
+            <li><strong>Quantity:</strong> {correctionQuantity}</li>
+            <li><strong>Lokasi:</strong> {correctionLocation}</li>
+          </ul>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setIsConfirmDialogOpen(false)}>Batal</Button>
+            <Button className="bg-blue-600 text-white" onClick={handleCorrectionSubmit}>Konfirmasi</Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
 
       {/* Inventory Table */}
       <Card>

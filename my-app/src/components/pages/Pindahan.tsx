@@ -81,14 +81,17 @@ export default function PindahanContent() {
     const payload: TransferPayload = {
       source,
       destination,
-      items,
+      items: items.map(({ item_id, quantity }) => ({
+        item_id,
+        quantity: Number(quantity), // Ensure it's sent as a number
+      })),
     };
 
     try {
       // ✅ Log the payload before sending
       console.log("🔄 Sending POST request (Transferring Items):", JSON.stringify(payload, null, 2));
 
-      const response = await fetch("http://localhost:8080/api/inventory/transfer", {
+      const response = await fetch("http://localhost:8080/api/inventory", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(payload),

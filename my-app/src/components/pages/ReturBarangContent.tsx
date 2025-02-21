@@ -59,10 +59,10 @@ export default function ReturBarangContent() {
       // ✅ Log the payload before sending
       console.log("🔄 Sending PUT request (Returning Items):", JSON.stringify(items, null, 2));
 
-      const response = await fetch("http://localhost:8080/api/items/return", {
+      const response = await fetch("http://localhost:8080/api/items", {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(items),
+        body: JSON.stringify({items: items}),
       });
 
       if (!response.ok) {

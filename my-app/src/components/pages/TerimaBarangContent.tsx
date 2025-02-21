@@ -99,30 +99,30 @@ export default function TerimaBarangContent() {
 
       // If there are existing items, send a **single PUT request**
       if (existingItems.length > 0) {
-        console.log("🔄 Sending PUT request (Updating Items):", JSON.stringify(existingItems, null, 2));
+        console.log("🔄 Sending PUT request (Updating Items):", { items: existingItems });
+
         requests.push(
-          fetch("http://localhost:8080/api/items/update", {
+          fetch("http://localhost:8080/api/items", {
             method: "PUT",
             headers: { "Content-Type": "application/json" },
-            body: JSON.stringify(
-              existingItems.map((item) => ({
-                item_id: item.item_id,
-                quantity: item.quantity,
-                location: "inventory_gudang",
-              }))
-            ),
+            body: JSON.stringify({
+              items: existingItems.map(({ item_id, quantity }) => ({ item_id, quantity }))
+            }),
           })
         );
       }
 
       // If there are new items, send a **single POST request**
       if (newItems.length > 0) {
-        console.log("🆕 Sending POST request (Creating New Items):", JSON.stringify(newItems, null, 2));
+        console.log("🆕 Sending POST request (Creating New Items):", {
+          items: newItems,
+        });
+      
         requests.push(
-          fetch("http://localhost:8080/api/items/create", {
+          fetch("http://localhost:8080/api/items", {
             method: "POST",
             headers: { "Content-Type": "application/json" },
-            body: JSON.stringify(newItems),
+            body: JSON.stringify({ items: newItems }),
           })
         );
       }
