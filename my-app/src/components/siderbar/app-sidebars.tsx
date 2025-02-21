@@ -28,6 +28,7 @@ const data = {
       items: [
         { title: "Penjualan Toko", url: "#" },
         { title: "Penjualan TikTok", url: "#" },
+        { title: "Penjualan Gudang", url: "#" },
       ],
     },
     {

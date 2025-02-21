@@ -77,13 +77,13 @@ export default function TelusuriItemContent() {
   }, []);
 
   // Filter data based on search query (Item ID)
-  const filteredData = React.useMemo(
-    () =>
-      data.filter((sale) =>
+  const filteredData = React.useMemo(() => {
+    return data
+      .filter((sale) =>
         sale.item_id.toLowerCase().includes(searchQuery.toLowerCase())
-      ),
-    [data, searchQuery]
-  );
+      )
+      .sort((a, b) => b.sale_id - a.sale_id); // Sorting in descending order
+  }, [data, searchQuery]);
 
   // Columns Definition
   const columns: ColumnDef<Sale>[] = [
@@ -156,6 +156,7 @@ export default function TelusuriItemContent() {
       sorting,
       columnVisibility,
     },
+    initialState: { pagination: { pageSize: 50 } },
   });
 
   return (

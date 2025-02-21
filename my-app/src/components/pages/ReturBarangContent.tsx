@@ -2,29 +2,49 @@
 
 import * as React from "react";
 import { useState } from "react";
-
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
+import { AiOutlinePlus, AiOutlineMinus } from "react-icons/ai";
 
 // 🔹 Define Return Data Type
 export type InventoryData = {
+  item_id: string;
   location: string;
   quantity: number;
-  description: string;
 };
 
 export default function ReturBarangContent() {
   // 🔹 State for Input Fields
-  const [itemId, setItemId] = useState("");
-  const [quantity, setQuantity] = useState<number | "">("");
-  const [description, setDescription] = useState("");
+  const [items, setItems] = useState<InventoryData[]>([
+    { item_id: "", location: "inventory_gudang", quantity: 0 },
+  ]);
   const [message, setMessage] = useState<string | null>(null);
-  const [isConfirmOpen, setIsConfirmOpen] = useState(false); // 🔹 Confirmation Modal State
+  const [isConfirmOpen, setIsConfirmOpen] = useState(false);
 
-  // 🔹 Open Confirmation Modal
+  // 🔹 Handle input changes in the table
+  const handleInputChange = (index: number, field: keyof InventoryData, value: string | number) => {
+    const updatedItems = [...items];
+    updatedItems[index] = { ...updatedItems[index], [field]: value };
+    setItems(updatedItems);
+  };
+
+  // 🔹 Add new row
+  const addRow = () => {
+    setItems([...items, { item_id: "", location: "inventory_gudang", quantity: 0 }]);
+  };
+
+  // 🔹 Remove row
+  const removeRow = (index: number) => {
+    if (items.length > 1) {
+      setItems(items.filter((_, i) => i !== index));
+    }
+  };
+
+  // 🔹 Open confirmation modal
   const handleOpenConfirm = () => {
-    if (!itemId || !quantity || !description) {
+    if (items.some((item) => !item.item_id || item.quantity <= 0)) {
       setMessage("❌ All fields are required.");
       return;
     }
@@ -33,107 +53,101 @@ export default function ReturBarangContent() {
 
   // 🔹 Confirm and Submit Return Request
   const handleConfirmReturn = async () => {
-    setIsConfirmOpen(false); // Close the modal
-
-    const inventoryData: InventoryData = {
-      location: "inventory_gudang", // 🔹 Ensure correct location
-      quantity: Number(quantity),
-      description,
-    };
+    setIsConfirmOpen(false);
 
     try {
-      const response = await fetch(`http://localhost:8080/api/items/${itemId}`, {
-        method: "PUT", // 🔹 Change from POST to PUT
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify(inventoryData),
+      // ✅ Log the payload before sending
+      console.log("🔄 Sending PUT request (Returning Items):", JSON.stringify(items, null, 2));
+
+      const response = await fetch("http://localhost:8080/api/items/return", {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(items),
       });
 
       if (!response.ok) {
-        throw new Error(`Failed to return item (Status: ${response.status})`);
+        throw new Error(`Failed to return items (Status: ${response.status})`);
       }
 
       setMessage("✅ Item return request submitted successfully!");
-      setItemId("");
-      setQuantity("");
-      setDescription("");
+      setItems([{ item_id: "", location: "inventory_gudang", quantity: 0, }]); // Reset form
     } catch (err) {
-      setMessage("❌ Error returning item. Please try again.");
+      setMessage("❌ Error returning items. Please try again.");
       console.error(err);
     }
   };
 
   return (
-    <div className="w-full max-w-lg mx-auto mt-10 p-6 bg-white shadow-md rounded-lg">
+    <div className="w-full max-w-5xl mx-auto mt-10 p-6 bg-white shadow-md rounded-lg">
       <h2 className="text-2xl font-semibold text-center mb-4">Retur Barang</h2>
 
-      {/* 🔹 Display Success/Error Message */}
-      {message && <div className={`text-center mb-4 ${message.startsWith("✅") ? "text-green-600" : "text-red-600"}`}>{message}</div>}
-
-      {/* 🔹 Item ID */}
-      <div className="mb-4">
-        <label className="block text-sm font-medium">Kode Barang</label>
-        <Input
-          type="text"
-          placeholder="Isi Kode Barang..."
-          value={itemId}
-          onChange={(e) => setItemId(e.target.value)}
-          className="w-full mt-1"
-        />
-      </div>
-
-      {/* 🔹 Quantity */}
-      <div className="mb-4">
-        <label className="block text-sm font-medium">Quantity</label>
-        <Input
-          type="number"
-          placeholder="Isi Quantity..."
-          value={quantity}
-          onChange={(e) => setQuantity(e.target.value ? Number(e.target.value) : "")}
-          className="w-full mt-1"
-        />
-      </div>
-
-      {/* 🔹 Description */}
-      <div className="mb-4">
-        <label className="block text-sm font-medium">Keterangan</label>
-        <Input
-          type="text"
-          placeholder="Isi Keterangan..."
-          value={description}
-          onChange={(e) => setDescription(e.target.value)}
-          className="w-full mt-1"
-        />
-      </div>
-
-      {/* 🔹 Submit Button (Opens Confirmation Modal) */}
-      <Button onClick={handleOpenConfirm} className="w-full bg-blue-600 text-white py-2 mt-4">
-        Retur
-      </Button>
-
-      {/* 🔹 Confirmation Modal */}
-      {isConfirmOpen && (
-        <Dialog open={isConfirmOpen} onOpenChange={setIsConfirmOpen}>
-          <DialogContent>
-            <DialogHeader>
-              <DialogTitle>Konfirmasi Retur Produk</DialogTitle>
-            </DialogHeader>
-            <p>
-              Anda yakin retur <strong>{quantity}x {itemId}</strong>?<br />
-              <strong>Deskripsi:</strong> {description}
-            </p>
-            <DialogFooter>
-              <Button variant="outline" onClick={() => setIsConfirmOpen(false)}>
-                Cancel
-              </Button>
-              <Button className="bg-red-600 text-white" onClick={handleConfirmReturn}>
-                Konfirmasi
-              </Button>
-            </DialogFooter>
-          </DialogContent>
-        </Dialog>
+      {message && (
+        <div className={`text-center mb-4 ${message.startsWith("✅") ? "text-green-600" : "text-red-600"}`}>
+          {message}
+        </div>
       )}
+
+      {/* Table for Item Input */}
+      <Table>
+        <TableHeader>
+          <TableRow>
+            <TableHead>Kode Barang</TableHead>
+            <TableHead>Quantity</TableHead>
+            <TableHead>Aksi</TableHead>
+          </TableRow>
+        </TableHeader>
+        <TableBody>
+          {items.map((item, index) => (
+            <TableRow key={index}>
+              <TableCell>
+                <Input
+                  type="text"
+                  placeholder="Kode Barang"
+                  value={item.item_id}
+                  onChange={(e) => handleInputChange(index, "item_id", e.target.value)}
+                />
+              </TableCell>
+              <TableCell>
+                <Input
+                  type="number"
+                  placeholder="Quantity"
+                  value={item.quantity}
+                  onChange={(e) => handleInputChange(index, "quantity", Number(e.target.value))}
+                />
+              </TableCell>
+              <TableCell>
+                <Button variant="destructive" onClick={() => removeRow(index)} disabled={items.length <= 1}>
+                  <AiOutlineMinus />
+                </Button>
+              </TableCell>
+            </TableRow>
+          ))}
+        </TableBody>
+      </Table>
+
+      {/* Buttons at the bottom */}
+      <div className="flex justify-between mt-4">
+        <Button className="bg-gray-800 text-white px-4 py-2" onClick={handleOpenConfirm}>
+          Konfirmasi
+        </Button>
+        <Button className="bg-gray-800 text-white px-4 py-2 flex items-center gap-2" onClick={addRow}>
+          <AiOutlinePlus />
+        </Button>
+      </div>
+
+      {/* Confirmation Modal */}
+      <Dialog open={isConfirmOpen} onOpenChange={setIsConfirmOpen}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Konfirmasi Retur Produk</DialogTitle>
+          </DialogHeader>
+          <p>Anda yakin ingin mengembalikan barang ke Inventory Gudang?</p>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setIsConfirmOpen(false)}>Cancel</Button>
+            <Button className="bg-red-600 text-white" onClick={handleConfirmReturn}>Konfirmasi</Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }
