@@ -57,6 +57,15 @@ export default function TransactionHistoryContent() {
   const [selectedTransactionId, setSelectedTransactionId] = React.useState("");
   const [newPaymentStatus, setNewPaymentStatus] = React.useState("");
 
+  const paymentMethodsMap: Record<number, string> = {
+    1: "Tunai",
+    2: "Debit",
+    3: "Transfer",
+    4: "Cek / GIRO",
+    5: "QR",
+    6: "Hutang",
+  };
+
   // Fetch transaction history from API
   React.useEffect(() => {
     const fetchTransactionHistory = async () => {
@@ -136,8 +145,11 @@ export default function TransactionHistoryContent() {
     },
     {
       accessorKey: "payment_id",
-      header: "Payment ID",
-      cell: ({ row }) => <div className="text-center">{row.getValue("payment_id")}</div>,
+      header: "Metode Pembayaran",
+      cell: ({ row }) => {
+        const paymentId = row.getValue("payment_id") as number;
+        return <div className="text-center">{paymentMethodsMap[paymentId] || "Unknown"}</div>;
+      },
     },
     {
       accessorKey: "payment_status",
@@ -147,12 +159,31 @@ export default function TransactionHistoryContent() {
     {
       accessorKey: "timestamp",
       header: "Tanggal & Waktu",
-      cell: ({ row }) => (
-        <div className="text-center">
-          {new Date(row.getValue("timestamp")).toLocaleString()}
-        </div>
-      ),
-    },
+      cell: ({ row }) => {
+        const rawTimestamp = row.getValue("timestamp") as string; // Ensure it's a string
+        const date = new Date(rawTimestamp);
+    
+        // Ensure valid date before formatting
+        if (isNaN(date.getTime())) {
+          return <div className="text-center text-red-500">Invalid Date</div>;
+        }
+    
+        // Convert from UTC to WIB (UTC+7)
+        const localDate = new Date(date.getTime() - 7 * 60 * 60 * 1000); // Adds 7 hours
+    
+        const formattedDate = localDate.toLocaleString("id-ID", {
+          year: "numeric",
+          month: "long",
+          day: "numeric",
+          hour: "2-digit",
+          minute: "2-digit",
+          second: "2-digit",
+          hour12: false, // 24-hour format
+        });
+    
+        return <div className="text-center">{formattedDate}</div>;
+      },
+    }
   ];
 
   const handleUpdatePaymentStatus = async () => {
@@ -162,7 +193,7 @@ export default function TransactionHistoryContent() {
     }
 
     try {
-      const response = await fetch(`http://localhost:8080/api/transactions/${selectedTransactionId}`, {
+      const response = await fetch(`http://localhost:8080/api/transactions/payment/${selectedTransactionId}`, {
         method: "PUT",
         headers: {
           "Content-Type": "application/json",

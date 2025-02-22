@@ -322,7 +322,7 @@ export default function PenjualanTokoContent() {
                           className="p-2 hover:bg-gray-200 cursor-pointer"
                           onClick={() => handleSelectItem(index, item)}
                         >
-                          {item.item_id} - {item.description} ({item.quantity} left)
+                          {item.item_id} - {item.description} (sisa {item.quantity})
                         </div>
                       ))}
                     </div>
@@ -389,8 +389,12 @@ export default function PenjualanTokoContent() {
                 <SelectContent>
                 <SelectGroup>
                     <SelectLabel>Metode Pembayaran</SelectLabel>
-                    <SelectItem value="1">Tukar</SelectItem>
-                    <SelectItem value="2">Tunai</SelectItem>
+                    <SelectItem value="1">Tunai</SelectItem>
+                    <SelectItem value="2">Debit</SelectItem>
+                    <SelectItem value="3">Transfer</SelectItem>
+                    <SelectItem value="4">Cek / GIRO</SelectItem>
+                    <SelectItem value="5">QR</SelectItem>
+                    <SelectItem value="6">Hutang</SelectItem>
                 </SelectGroup>
                 </SelectContent>
             </Select>

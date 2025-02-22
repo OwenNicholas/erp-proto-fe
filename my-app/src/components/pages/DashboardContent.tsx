@@ -31,7 +31,7 @@ interface InventoryResponse {
 }
 
 const DashboardContent = () => {
-  const [inventoryType, setInventoryType] = useState<"toko" | "gudang" | "tiktok">("toko"); // Default to Toko
+  const [inventoryType, setInventoryType] = useState<"toko" | "gudang" | "tiktok" | "rusak">("toko");
   const [inventoryData, setInventoryData] = useState<InventoryItem[]>([]);
   const [searchQuery, setSearchQuery] = useState<string>("");
 
@@ -39,9 +39,15 @@ const DashboardContent = () => {
   const [isDialogOpen, setIsDialogOpen] = useState<boolean>(false);
   const [correctionItemId, setCorrectionItemId] = useState<string>("");
   const [correctionQuantity, setCorrectionQuantity] = useState<number | null>(null);
-  const [correctionLocation, setCorrectionLocation] = useState<"toko" | "gudang" | "tiktok" | undefined>(undefined);
+  const [correctionLocation, setCorrectionLocation] = useState<"inventory_toko" | "inventory_gudang" | "inventory_tiktok">("inventory_toko");
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const [isConfirmDialogOpen, setIsConfirmDialogOpen] = useState<boolean>(false);
+
+   // Koreksi Harga States
+   const [isPriceDialogOpen, setIsPriceDialogOpen] = useState<boolean>(false);
+   const [priceItemId, setPriceItemId] = useState<string>("");
+   const [newPrice, setNewPrice] = useState<number | null>(null);
+   const [isPriceConfirmDialogOpen, setIsPriceConfirmDialogOpen] = useState<boolean>(false);
 
   useEffect(() => {
     fetchInventory();
@@ -73,6 +79,10 @@ const DashboardContent = () => {
   );
 
   const handleOpenConfirmDialog = () => {
+    console.log("DEBUG -> Item ID:", correctionItemId);
+    console.log("DEBUG -> Quantity:", correctionQuantity);
+    console.log("DEBUG -> Location:", correctionLocation);
+
     if (!correctionItemId || correctionQuantity === null || !correctionLocation) {
       setErrorMessage("❌ Item ID, Quantity, dan Lokasi harus diisi!");
       return;
@@ -84,10 +94,19 @@ const DashboardContent = () => {
   // 🔹 Handle Koreksi (Inventory Correction)
   const handleCorrectionSubmit = async () => {
     setIsConfirmDialogOpen(false);
+
+    console.log("Item ID:", correctionItemId);
+    console.log("Quantity:", correctionQuantity);
+    console.log("Location:", correctionLocation);
     if (!correctionItemId || correctionQuantity === null) {
       setErrorMessage("Item ID dan Quantity harus diisi!");
       return;
     }
+    const payload = {
+      location: correctionLocation, 
+      quantity: correctionQuantity,
+    };
+  
 
     try {
       const response = await fetch(`http://localhost:8080/api/items/${correctionItemId}`, {
@@ -95,10 +114,7 @@ const DashboardContent = () => {
         headers: {
           "Content-Type": "application/json",
         },
-        body: JSON.stringify({
-          location: correctionLocation,
-          quantity: correctionQuantity,
-        }),
+        body: JSON.stringify(payload),
       });
 
       if (!response.ok) {
@@ -117,35 +133,68 @@ const DashboardContent = () => {
     }
   };
 
+
+  const handlePriceConfirmSubmit = async () => {
+    setIsPriceConfirmDialogOpen(false);
+    if (!priceItemId || newPrice === null || newPrice <= 0) {
+      setErrorMessage("❌ Item ID dan Harga Baru harus diisi!");
+      return;
+    }
+    const payload = {
+      item_id: priceItemId,
+      price: newPrice,
+    };
+
+    console.log("📤 Sending PUT request to /api/items/price with payload:", payload);
+
+    try {
+      const response = await fetch(`http://localhost:8080/api/items/price`, {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          item_id: priceItemId,
+          price: newPrice,
+        }),
+      });
+
+      if (!response.ok) {
+        throw new Error("Gagal memperbarui harga");
+      }
+
+      fetchInventory();
+      setIsPriceDialogOpen(false);
+      setPriceItemId("");
+      setNewPrice(null);
+      setErrorMessage(null);
+    } catch (error) {
+      console.error("Error updating price:", error);
+      setErrorMessage("Gagal memperbarui harga. Coba lagi.");
+    }
+  };
+
+
   return (
     <div className="p-4 text-lg font-semibold">
-      {/* Koreksi Dialog */}
-      <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
-        <DialogTrigger asChild>
-          <Button variant="outline" className="mb-4">Koreksi Inventory</Button>
-        </DialogTrigger>
-        <DialogContent>
-          <DialogHeader>
-            <DialogTitle>Koreksi Inventory</DialogTitle>
-          </DialogHeader>
-
-          {/* Input Fields */}
-          <div className="space-y-4">
-            <Input
-              placeholder="Item ID"
-              value={correctionItemId}
-              onChange={(e) => setCorrectionItemId(e.target.value)}
-            />
-            <Input
-              type="number"
-              placeholder="Quantity"
-              value={correctionQuantity ?? ""}
-              onChange={(e) => setCorrectionQuantity(Number(e.target.value))}
-            />
-            <Select onValueChange={(value) => setCorrectionLocation(value as "toko" | "gudang" | "tiktok")} value={correctionLocation}>
-              <SelectTrigger className="w-full">
-                <SelectValue placeholder="Pilih Lokasi" />
-              </SelectTrigger>
+      {/* Koreksi Buttons */}
+      <div className="flex gap-4 mb-4">
+        <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
+          <DialogTrigger asChild>
+            <Button variant="outline">Koreksi Inventory</Button>
+          </DialogTrigger>
+          <DialogContent>
+            <DialogHeader>
+              <DialogTitle>Koreksi Inventory</DialogTitle>
+            </DialogHeader>
+            <Input placeholder="Item ID" value={correctionItemId} onChange={(e) => setCorrectionItemId(e.target.value)} />
+            <Input type="number" placeholder="Quantity" value={correctionQuantity ?? ""} onChange={(e) => setCorrectionQuantity(Number(e.target.value))} />
+            <Select
+              onValueChange={(value) => {
+                console.log("Selected location:", value); // Debugging log
+                setCorrectionLocation(value as "inventory_toko" | "inventory_gudang" | "inventory_tiktok");
+              }}
+              value={correctionLocation} // No need for ?? "inventory_toko" since we set a default in useState
+            >
+              <SelectTrigger className="w-full"><SelectValue placeholder="Pilih Lokasi" /></SelectTrigger>
               <SelectContent>
                 <SelectItem value="inventory_toko">Toko</SelectItem>
                 <SelectItem value="inventory_gudang">Gudang</SelectItem>
@@ -153,18 +202,28 @@ const DashboardContent = () => {
               </SelectContent>
             </Select>
             {errorMessage && <div className="text-red-500">{errorMessage}</div>}
-          </div>
+            <Button onClick={handleOpenConfirmDialog} className="w-full mt-4">Simpan Perubahan</Button>
+          </DialogContent>
+        </Dialog>
 
-          {/* Submit Button */}
-          <Button onClick={handleOpenConfirmDialog} className="w-full mt-4">
-            Simpan Perubahan
-          </Button>
-        </DialogContent>
-      </Dialog>
-
+        <Dialog open={isPriceDialogOpen} onOpenChange={setIsPriceDialogOpen}>
+          <DialogTrigger asChild>
+            <Button variant="outline">Koreksi Harga</Button>
+          </DialogTrigger>
+          <DialogContent>
+            <DialogHeader>
+              <DialogTitle>Koreksi Harga</DialogTitle>
+            </DialogHeader>
+            <Input placeholder="Item ID" value={priceItemId} onChange={(e) => setPriceItemId(e.target.value)} />
+            <Input type="number" placeholder="Harga Baru" value={newPrice ?? ""} onChange={(e) => setNewPrice(Number(e.target.value))} />
+            {errorMessage && <div className="text-red-500">{errorMessage}</div>}
+            <Button onClick={() => setIsPriceConfirmDialogOpen(true)} className="w-full mt-4">Simpan Perubahan</Button>
+          </DialogContent>
+        </Dialog>
+      </div>
       {/* Dropdown Selector */}
       <div className="flex justify-between items-center mb-4">
-        <Select onValueChange={(value) => setInventoryType(value as "toko" | "gudang" | "tiktok")} value={inventoryType}>
+        <Select onValueChange={(value) => setInventoryType(value as "toko" | "gudang" | "tiktok" | "rusak" )} value={inventoryType}>
           <SelectTrigger className="w-[200px]">
             <SelectValue placeholder="Select Inventory" />
           </SelectTrigger>
@@ -172,6 +231,7 @@ const DashboardContent = () => {
             <SelectItem value="toko">Toko</SelectItem>
             <SelectItem value="gudang">Gudang</SelectItem>
             <SelectItem value="tiktok">TikTok</SelectItem>
+            <SelectItem value="rusak">Rusak</SelectItem>
           </SelectContent>
         </Select>
 
@@ -199,6 +259,24 @@ const DashboardContent = () => {
           <DialogFooter>
             <Button variant="outline" onClick={() => setIsConfirmDialogOpen(false)}>Batal</Button>
             <Button className="bg-blue-600 text-white" onClick={handleCorrectionSubmit}>Konfirmasi</Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* Confirmation Dialog */}
+      <Dialog open={isPriceConfirmDialogOpen} onOpenChange={setIsPriceConfirmDialogOpen}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Konfirmasi Perubahan Harga</DialogTitle>
+          </DialogHeader>
+          <p>Apakah Anda yakin ingin mengubah harga barang ini?</p>
+          <ul className="list-disc ml-6 text-sm text-gray-700">
+            <li><strong>Item ID:</strong> {priceItemId}</li>
+            <li><strong>Harga Baru:</strong> Rp.{newPrice?.toLocaleString("id-ID")}</li>
+          </ul>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setIsPriceConfirmDialogOpen(false)}>Batal</Button>
+            <Button className="bg-blue-600 text-white" onClick={handlePriceConfirmSubmit}>Konfirmasi</Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>

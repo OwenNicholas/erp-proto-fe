@@ -6,19 +6,28 @@ import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { AiOutlinePlus, AiOutlineMinus } from "react-icons/ai";
 
 // 🔹 Define Return Data Type
 export type InventoryData = {
+  sale_id: string;
   item_id: string;
   location: string;
   quantity: number;
+  condition: "Rusak" | "Tidak Rusak";
 };
 
 export default function ReturBarangContent() {
   // 🔹 State for Input Fields
   const [items, setItems] = useState<InventoryData[]>([
-    { item_id: "", location: "inventory_gudang", quantity: 0 },
+    { sale_id: "", item_id: "", location: "inventory_gudang", quantity: 0, condition: "Tidak Rusak" },
   ]);
   const [message, setMessage] = useState<string | null>(null);
   const [isConfirmOpen, setIsConfirmOpen] = useState(false);
@@ -32,7 +41,7 @@ export default function ReturBarangContent() {
 
   // 🔹 Add new row
   const addRow = () => {
-    setItems([...items, { item_id: "", location: "inventory_gudang", quantity: 0 }]);
+    setItems([...items, { sale_id: "", item_id: "", location: "inventory_gudang", quantity: 0, condition: "Tidak Rusak" }]);
   };
 
   // 🔹 Remove row
@@ -44,8 +53,8 @@ export default function ReturBarangContent() {
 
   // 🔹 Open confirmation modal
   const handleOpenConfirm = () => {
-    if (items.some((item) => !item.item_id || item.quantity <= 0)) {
-      setMessage("❌ All fields are required.");
+    if (items.some((item) => !item.sale_id || !item.item_id || item.quantity <= 0)) {
+      setMessage("❌ Sale ID, Item ID, and Quantity are required.");
       return;
     }
     setIsConfirmOpen(true);
@@ -59,18 +68,60 @@ export default function ReturBarangContent() {
       // ✅ Log the payload before sending
       console.log("🔄 Sending PUT request (Returning Items):", JSON.stringify(items, null, 2));
 
-      const response = await fetch("http://localhost:8080/api/items", {
-        method: "PUT",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({items: items}),
-      });
+      const damagedItems = items
+      .filter((item) => item.condition === "Rusak")
+      .map(({ item_id, quantity, sale_id }) => ({
+        item_id,
+        quantity,
+        sale_id: Number(sale_id),
+      }));
 
-      if (!response.ok) {
-        throw new Error(`Failed to return items (Status: ${response.status})`);
+      const normalItems = items
+      .filter((item) => item.condition === "Tidak Rusak")
+      .map(({ item_id, quantity, sale_id }) => ({
+        item_id,
+        quantity,
+        sale_id: Number(sale_id),
+      }));
+
+      if (damagedItems.length > 0) {
+        console.log("🚨 Sending request for DAMAGED items...");
+        const payload = { 
+          items: damagedItems.map(({ item_id, quantity, sale_id }) => ({ item_id, quantity, sale_id }))
+        };
+        console.log(payload);
+        const responseDamaged = await fetch("http://localhost:8080/api/items/rusak", {
+          method: "PUT",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(payload),
+        });
+  
+        if (!responseDamaged.ok) {
+          throw new Error(`Failed to return DAMAGED items (Status: ${responseDamaged.status})`);
+        }
+      }
+
+      if (normalItems.length > 0) {
+        console.log("✅ Sending request for NORMAL returned items...");
+
+        const payload = { 
+          items: normalItems.map(({ item_id, quantity, sale_id }) => ({ item_id, quantity, sale_id }))
+        };
+        console.log(payload);
+
+        const responseNormal = await fetch("http://localhost:8080/api/items", {
+          method: "PUT",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify( payload ),
+        });
+  
+        if (!responseNormal.ok) {
+          throw new Error(`Failed to return NORMAL items (Status: ${responseNormal.status})`);
+        }
       }
 
       setMessage("✅ Item return request submitted successfully!");
-      setItems([{ item_id: "", location: "inventory_gudang", quantity: 0, }]); // Reset form
+      setItems([{ sale_id: "", item_id: "", location: "inventory_gudang", quantity: 0, condition: "Tidak Rusak" }]); // Reset form
     } catch (err) {
       setMessage("❌ Error returning items. Please try again.");
       console.error(err);
@@ -91,14 +142,24 @@ export default function ReturBarangContent() {
       <Table>
         <TableHeader>
           <TableRow>
+            <TableHead>No. Penjualan</TableHead>
             <TableHead>Kode Barang</TableHead>
             <TableHead>Quantity</TableHead>
+            <TableHead>Kondisi</TableHead>
             <TableHead>Aksi</TableHead>
           </TableRow>
         </TableHeader>
         <TableBody>
           {items.map((item, index) => (
             <TableRow key={index}>
+              <TableCell>
+                <Input
+                  type="text"
+                  placeholder="No. Penjualan"
+                  value={item.sale_id}
+                  onChange={(e) => handleInputChange(index, "sale_id", e.target.value)}
+                />
+              </TableCell>
               <TableCell>
                 <Input
                   type="text"
@@ -114,6 +175,20 @@ export default function ReturBarangContent() {
                   value={item.quantity}
                   onChange={(e) => handleInputChange(index, "quantity", Number(e.target.value))}
                 />
+              </TableCell>
+              <TableCell>
+                <Select
+                  value={item.condition}
+                  onValueChange={(value) => handleInputChange(index, "condition", value)}
+                >
+                  <SelectTrigger className="w-full">
+                    <SelectValue placeholder="Pilih Kondisi" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="Rusak">Rusak</SelectItem>
+                    <SelectItem value="Tidak Rusak">Tidak Rusak</SelectItem>
+                  </SelectContent>
+                </Select>
               </TableCell>
               <TableCell>
                 <Button variant="destructive" onClick={() => removeRow(index)} disabled={items.length <= 1}>

@@ -35,6 +35,7 @@ export type Sale = {
   sale_id: number;
   description: string;
   quantity: number;
+  quantity_retur: number;
   price: number;
   total: number;
   discount_per_item: number;
@@ -108,6 +109,11 @@ export default function TelusuriItemContent() {
       cell: ({ row }) => <div className="text-center">{row.getValue("quantity")}</div>,
     },
     {
+      accessorKey: "quantity_retur",
+      header: "Quantity Retur",
+      cell: ({ row }) => <div className="text-center">{row.getValue("quantity_retur")}</div>,
+    },
+    {
       accessorKey: "price",
       header: "Harga",
       cell: ({ row }) => {
@@ -123,11 +129,61 @@ export default function TelusuriItemContent() {
       accessorKey: "total",
       header: "Total",
       cell: ({ row }) => {
-        const amount = parseFloat(row.getValue("total"));
+        // State to store total_discount from backend
+        const [totalDiscount, setTotalDiscount] = React.useState<number>(0);
+        const transactionId = row.getValue("transaction_id");
+    
+        // Fetch total_discount from backend if discountPerItem is 0
+        React.useEffect(() => {
+          const fetchTotalDiscount = async () => {
+            try {
+              if (!transactionId) {
+                console.error("Transaction ID is missing");
+                return;
+              }
+        
+              const response = await fetch(`http://localhost:8080/api/transactions/discount_percent/${transactionId}`);
+              if (!response.ok) throw new Error("Failed to fetch total_discount");
+
+        
+              const data = await response.json();
+              setTotalDiscount(data.data || 0);
+            } catch (error) {
+              console.error("Error fetching total_discount:", error);
+            }
+          };
+        
+          fetchTotalDiscount();
+        }, [row]); // Ensure effect runs when row changes
+    
+        // Get relevant values from row
+        const quantity = parseFloat(row.getValue("quantity")) || 0;
+        const quantityRetur = parseFloat(row.getValue("quantity_retur")) || 0;
+        const harga = parseFloat(row.getValue("price")) || 0;
+        const discountPerItem = parseFloat(row.getValue("discount_per_item")) || 0;
+    
+        // Decide which discount to apply
+        const subtotal = (quantity - quantityRetur) * harga;
+
+        // ✅ Apply correct discount logic
+        let discount = 0;
+        if (discountPerItem > 0) {
+          // Apply fixed discount per item
+          discount = discountPerItem * (quantity - quantityRetur);
+        } else if (totalDiscount > 0) {
+          // Apply percentage discount from backend
+          discount = (subtotal * totalDiscount) / 100;
+        }
+
+        // Calculate final total
+        const totalAmount = subtotal - discount;
+
+        // Format as Indonesian Rupiah (IDR)
         const formatted = new Intl.NumberFormat("id-ID", {
           style: "currency",
           currency: "IDR",
-        }).format(amount);
+        }).format(totalAmount);
+
         return <div className="text-right font-medium">{formatted}</div>;
       },
     },
