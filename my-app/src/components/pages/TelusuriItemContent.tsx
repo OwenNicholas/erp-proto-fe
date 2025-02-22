@@ -81,24 +81,33 @@ export default function TelusuriItemContent() {
   React.useEffect(() => {
     const fetchTotalDiscounts = async () => {
       try {
-        const response = await fetch("http://localhost:8080/api/transactions/discounts");
-        if (!response.ok) throw new Error("Failed to fetch discounts");
+        const response = await fetch("http://localhost:8080/api/transactions/discount_percent"); // Fetch all discounts at once
+        if (!response.ok) {
+          throw new Error(`Failed to fetch discounts. Status: ${response.status}`);
+        }
   
-        const data = await response.json();
+        const responseData = await response.json();
+  
+        if (!responseData || typeof responseData !== "object" || !responseData.data || !Array.isArray(responseData.data)) {
+          throw new Error("Invalid data format: Expected an object with a 'data' array");
+        }
+  
+        // Transform response into an object { transaction_id: discount_percent }
         const discountMap: { [key: number]: number } = {};
-        data.forEach((item: { transaction_id: number; total_discount: number }) => {
-          discountMap[item.transaction_id] = item.total_discount;
+        responseData.data.forEach((item: { transaction_id: number; discount_percent: number }) => {
+          if (typeof item.transaction_id === "number" && typeof item.discount_percent === "number") {
+            discountMap[item.transaction_id] = item.discount_percent;
+          }
         });
   
-        setDiscounts(discountMap);
+        setDiscounts(discountMap); // Store all discounts in state once
       } catch (error) {
         console.error("Error fetching discounts:", error);
       }
     };
   
     fetchTotalDiscounts();
-  }, []);
-
+  }, []); // Runs only once when the component mounts
   // Filter data based on search query (Item ID)
   const filteredData = React.useMemo(() => {
     return data
@@ -151,30 +160,35 @@ export default function TelusuriItemContent() {
       accessorKey: "total",
       header: "Total",
       cell: ({ row }) => {
+        // Get transaction ID
         const transactionId = row.getValue("transaction_id") as number;
-        const totalDiscount = discounts[transactionId] || 0; // Get discount from state
+        const totalDiscount = discounts[transactionId] ?? 0; // ✅ Default to 0 if undefined
     
-        const quantity = parseFloat(row.getValue("quantity")) || 0;
-        const quantityRetur = parseFloat(row.getValue("quantity_retur")) || 0;
-        const harga = parseFloat(row.getValue("price")) || 0;
-        const discountPerItem = parseFloat(row.getValue("discount_per_item")) || 0;
+        // Get row values
+        const quantity = Number(row.getValue("quantity")) || 0;
+        const quantityRetur = Number(row.getValue("quantity_retur")) || 0;
+        const price = Number(row.getValue("price")) || 0;
+        const discountPerItem = Number(row.getValue("discount_per_item")) || 0;
     
-        const subtotal = (quantity - quantityRetur) * harga;
+        // Compute subtotal
+        const netQuantity = Math.max(quantity - quantityRetur, 0);
+        const subtotal = netQuantity * price;
     
-        let discount = 0;
-        if (discountPerItem > 0) {
-          discount = discountPerItem * (quantity - quantityRetur);
-        } else if (totalDiscount > 0) {
-          discount = (subtotal * totalDiscount) / 100;
-        }
+        // Apply the correct discount
+        const itemDiscount = discountPerItem > 0 ? discountPerItem * netQuantity : 0;
+        const percentageDiscount = discountPerItem === 0 && totalDiscount > 0 ? (subtotal * totalDiscount) / 100 : 0;
+        const totalDiscountAmount = itemDiscount + percentageDiscount;
     
-        const totalAmount = subtotal - discount;
-        const formatted = new Intl.NumberFormat("id-ID", {
+        // Final total
+        const totalAmount = subtotal - totalDiscountAmount;
+    
+        // Format as IDR currency
+        const formattedTotal = new Intl.NumberFormat("id-ID", {
           style: "currency",
           currency: "IDR",
         }).format(totalAmount);
     
-        return <div className="text-right font-medium">{formatted}</div>;
+        return <div className="text-right font-medium">{formattedTotal}</div>;
       },
     },
     {
