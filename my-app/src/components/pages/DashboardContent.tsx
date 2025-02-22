@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useEffect, useState } from "react";
+import React, { useCallback, useEffect, useState } from "react";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import {
   Select,
@@ -49,11 +49,7 @@ const DashboardContent = () => {
    const [newPrice, setNewPrice] = useState<number | null>(null);
    const [isPriceConfirmDialogOpen, setIsPriceConfirmDialogOpen] = useState<boolean>(false);
 
-  useEffect(() => {
-    fetchInventory();
-  }, [inventoryType]); // Fetch when inventory type changes
-
-  const fetchInventory = async () => {
+   const fetchInventory = useCallback(async () => {
     try {
       const response = await fetch(`http://localhost:8080/api/inventory/${inventoryType}`);
       if (!response.ok) {
@@ -64,7 +60,11 @@ const DashboardContent = () => {
     } catch (error) {
       console.error("Error fetching data:", error);
     }
-  };
+  }, [inventoryType]); // ✅ Dependency added
+  
+  useEffect(() => {
+    fetchInventory();
+  }, [fetchInventory]);
 
   // Compute total value (Quantity × Price)
   const computeTotalValue = (item: InventoryItem) => {

@@ -14,11 +14,6 @@ import {
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 
-// Define API response type
-interface LoginResponse {
-  role: string;
-}
-
 export function LoginForm({ className, ...props }: { className?: string }) {
   const [username, setUsername] = useState<string>("");
   const [password, setPassword] = useState<string>("");
