@@ -73,18 +73,10 @@ export default function PenjualanTiktokContent() {
   // Function to safely parse a price string into a number
   const parsePrice = (value: string | undefined): number => {
     if (!value) return 0;
-    const number = parseFloat(value.replace(/Rp\.|,/g, "")) || 0;
-    return number
-  };
-
-  const parseAndFormatPrice = (value: string | undefined): number => {
-    if (!value) return 0;
   
-    // Remove "Rp." and commas
-    const numericValue = parseFloat(value.replace(/^Rp\./, "").replace(/,/g, "")) || 0;
+    const numericValue = parseFloat(value.replace(/Rp\.|\./g, "").replace(/,/g, "")) || 0;
   
-    // Multiply by 1000 and ensure 3 decimal places
-    return parseFloat((numericValue * 1000).toFixed(3));
+    return numericValue;
   };
 
   // Function to format as Rp. currency
@@ -186,10 +178,7 @@ export default function PenjualanTiktokContent() {
     // Convert subtotal to ensure exactly 3 decimal places (thousands format)
     const formattedSubtotal = (subtotal).toFixed(3);
   
-    return `Rp.${parseFloat(formattedSubtotal).toLocaleString("id-ID", {
-      minimumFractionDigits: 3,
-      maximumFractionDigits: 3,
-    })}`;
+    return `Rp.${parseFloat(formattedSubtotal).toLocaleString("id-ID")}`;
   };
 
   const handleProceedToPayment = () => {
@@ -200,11 +189,11 @@ export default function PenjualanTiktokContent() {
     setIsConfirmDialogOpen(false);
     const processedInvoices = invoices.map(({ invoice, hargaSatuan, jumlah, discountPerItem, description, total }) => ({
       item_id: invoice,
-      price: parseAndFormatPrice(hargaSatuan),
+      price: parsePrice(hargaSatuan),
       quantity: parseInt(jumlah),
-      discount_per_item: parseAndFormatPrice(discountPerItem),
+      discount_per_item: parsePrice(discountPerItem),
       description: description,
-      total: parseAndFormatPrice(total),
+      total: parsePrice(total),
     }));
 
     const subtotal = processedInvoices.reduce((sum, item) => sum + item.total, 0);
@@ -240,6 +229,9 @@ export default function PenjualanTiktokContent() {
       });
       if (!response.ok) throw new Error("Failed to process transaction");
       alert("Sale successful!");
+      setInvoices([
+        { invoice: "", hargaSatuan: "Rp.0", jumlah: "1", discountPerItem: "0", total: "Rp.0", description: "", stock: "" },
+      ]);
     } catch (error) {
       console.error("Transaction error:", error);
       alert("Transaction failed!");

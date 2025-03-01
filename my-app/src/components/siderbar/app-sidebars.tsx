@@ -1,6 +1,6 @@
 "use client";
 import { AiFillDollarCircle, AiOutlineHistory, AiOutlineTruck} from "react-icons/ai";
-import { FaStore } from "react-icons/fa";
+import { FaStore, FaBookOpen } from "react-icons/fa";
 import * as React from "react";
 import { NavMain } from "@/components/siderbar/nav-mains";
 import { NavUser } from "@/components/siderbar/nav-user";
@@ -32,12 +32,13 @@ const data = {
       ],
     },
     {
-      title: "History Penjualan",
+      title: "History",
       url: "#",
       icon: AiOutlineHistory,
       items: [
         { title: "Telusuri Item lewat ID", url: "#" },
         { title: "History Transaksi", url: "#" },
+        { title: "History Pindahan", url: "#" },
       ],
     },
     {
@@ -49,6 +50,15 @@ const data = {
         { title: "Retur Barang", url: "#" },
         { title: "Terima Barang", url: "#" },
       ],
+    },
+    {
+    title: "Laporan",
+    url: "#",
+    icon: FaBookOpen,
+    items: [
+      { title: "Harian", url: "#" },
+      { title: "Bulanan", url: "#" },
+    ],
     },
   ],
 };

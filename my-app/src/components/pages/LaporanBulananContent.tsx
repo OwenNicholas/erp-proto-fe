@@ -1,0 +1,112 @@
+"use client";
+
+import React, { useEffect, useState } from "react";
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { format, parseISO } from "date-fns";
+import { id } from "date-fns/locale"; // Indonesian locale formatting
+
+// Define Transaction type
+interface Transaction {
+  transaction_id: number;
+  timestamp: string;
+}
+
+// Define Sale type
+interface Sale {
+  sale_id: number;
+  total: number;
+  transaction_id: number;
+}
+
+export default function LaporanBulananContent() {
+  const [salesData, setSalesData] = useState<Sale[]>([]);
+  const [transactions, setTransactions] = useState<Transaction[]>([]);
+  const [groupedSales, setGroupedSales] = useState<Record<string, number>>({});
+
+  useEffect(() => {
+    fetchSales();
+    fetchTransactions();
+  }, []);
+
+  useEffect(() => {
+    if (salesData.length > 0 && transactions.length > 0) {
+      groupSalesByMonth();
+    }
+  }, [salesData, transactions]);
+
+  const fetchSales = async () => {
+    try {
+      const response = await fetch("http://localhost:8080/api/sales");
+      if (!response.ok) throw new Error("Failed to fetch sales");
+      const data = await response.json();
+      setSalesData(data.data || []);
+    } catch (error) {
+      console.error("Error fetching sales:", error);
+    }
+  };
+
+  const fetchTransactions = async () => {
+    try {
+      const response = await fetch("http://localhost:8080/api/transactions");
+      if (!response.ok) throw new Error("Failed to fetch transactions");
+      const data = await response.json();
+      setTransactions(data.data || []);
+    } catch (error) {
+      console.error("Error fetching transactions:", error);
+    }
+  };
+
+  const groupSalesByMonth = () => {
+    const grouped: Record<string, number> = {};
+
+    salesData.forEach((sale) => {
+      const transaction = transactions.find((tx) => tx.transaction_id === sale.transaction_id);
+      if (!transaction || !transaction.timestamp) return;
+
+      const saleDate = parseISO(transaction.timestamp);
+      const monthYear = format(saleDate, "MMMM yyyy", { locale: id }); // Full month name
+
+      if (!grouped[monthYear]) {
+        grouped[monthYear] = 0;
+      }
+      grouped[monthYear] += sale.total;
+    });
+
+    setGroupedSales(grouped);
+  };
+
+  return (
+    <div className="p-8 max-w-5xl mx-auto">
+      <Card className="shadow-lg rounded-2xl border border-gray-300">
+        <CardHeader className="text-center">
+          <CardTitle className="text-3xl font-bold">Laporan Penjualan Bulanan</CardTitle>
+        </CardHeader>
+        <CardContent className="p-6">
+          {Object.keys(groupedSales).length === 0 ? (
+            <p className="text-center text-gray-500 text-2xl font-semibold py-8">❌ No sales data available.</p>
+          ) : (
+            <Table className="w-full text-lg">
+              <TableHeader>
+                <TableRow className="bg-gray-100 text-xl">
+                  <TableHead className="px-6 py-4">Bulan</TableHead>
+                  <TableHead className="px-6 py-4 text-right">💰 Total Penjualan</TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                {Object.entries(groupedSales).map(([month, total]) => (
+                  <TableRow key={month} className="border-b text-xl">
+                    <TableCell className="px-6 py-4">{month}</TableCell>
+                    <TableCell className="px-6 py-4 text-right font-semibold">
+                      Rp. {total.toLocaleString("id-ID")}
+                    </TableCell>
+                  </TableRow>
+                ))}
+              </TableBody>
+            </Table>
+          )}
+        </CardContent>
+      </Card>
+    </div>
+  );
+}

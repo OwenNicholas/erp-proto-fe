@@ -51,6 +51,7 @@ const DashboardContent = () => {
 
    const fetchInventory = useCallback(async () => {
     try {
+      // Fetch selected inventory
       const response = await fetch(`http://localhost:8080/api/inventory/${inventoryType}`);
       if (!response.ok) {
         throw new Error("Failed to fetch inventory");
@@ -60,7 +61,7 @@ const DashboardContent = () => {
     } catch (error) {
       console.error("Error fetching data:", error);
     }
-  }, [inventoryType]); // ✅ Dependency added
+  }, [inventoryType]);
   
   useEffect(() => {
     fetchInventory();
@@ -71,6 +72,10 @@ const DashboardContent = () => {
     return item.quantity * item.price;
   };
 
+  const computeGrandTotal = () => {
+    return inventoryData.reduce((sum, item) => sum + computeTotalValue(item), 0);
+  };
+
 
   // Filter inventory based on search query
   const filteredInventory = inventoryData.filter((item) =>
@@ -79,9 +84,6 @@ const DashboardContent = () => {
   );
 
   const handleOpenConfirmDialog = () => {
-    console.log("DEBUG -> Item ID:", correctionItemId);
-    console.log("DEBUG -> Quantity:", correctionQuantity);
-    console.log("DEBUG -> Location:", correctionLocation);
 
     if (!correctionItemId || correctionQuantity === null || !correctionLocation) {
       setErrorMessage("❌ Item ID, Quantity, dan Lokasi harus diisi!");
@@ -95,9 +97,6 @@ const DashboardContent = () => {
   const handleCorrectionSubmit = async () => {
     setIsConfirmDialogOpen(false);
 
-    console.log("Item ID:", correctionItemId);
-    console.log("Quantity:", correctionQuantity);
-    console.log("Location:", correctionLocation);
     if (!correctionItemId || correctionQuantity === null) {
       setErrorMessage("Item ID dan Quantity harus diisi!");
       return;
@@ -285,6 +284,9 @@ const DashboardContent = () => {
       <Card>
         <CardHeader>
           <CardTitle>Inventory - {inventoryType.charAt(0).toUpperCase() + inventoryType.slice(1)}</CardTitle>
+          <div className="text-lg font-bold text-black-600">
+            Grand Total: Rp.{computeGrandTotal().toLocaleString("id-ID")}
+          </div>
         </CardHeader>
         <CardContent>
           <Table>

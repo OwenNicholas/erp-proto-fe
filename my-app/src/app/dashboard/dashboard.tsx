@@ -21,9 +21,12 @@ import PenjualanTiktokContent from "@/components/pages/PenjualanTiktokContent";
 import PenjualanGudangContent from "@/components/pages/PenjualanGudangContent";
 import PindahanContent from "@/components/pages/Pindahan";
 import TelusuriItemContent from "@/components/pages/TelusuriItemContent";
+import HistoryPindahanContent from "@/components/pages/HistoryPindahan";
 import TransactionContent from "@/components/pages/TransactionContent";
 import TerimaBarangContent from "@/components/pages/TerimaBarangContent";
 import ReturBarangContent from "@/components/pages/ReturBarangContent";
+import LaporanHarianContent from "@/components/pages/LaporanHarianContent";
+import LaporanBulananContent from "@/components/pages/LaporanBulananContent";
 
 
 
@@ -35,9 +38,12 @@ const sectionComponents: Record<string, JSX.Element> = {
   "Penjualan Gudang": <PenjualanGudangContent />,
   "Telusuri Item lewat ID": <TelusuriItemContent />, 
   "History Transaksi": <TransactionContent />, 
+  "History Pindahan": <HistoryPindahanContent />, 
   "Pindahan": <PindahanContent />, 
   "Retur Barang": <ReturBarangContent />, 
   "Terima Barang": <TerimaBarangContent />,
+  "Harian": <LaporanHarianContent />,
+  "Bulanan": <LaporanBulananContent />,
 };
 
 export type SectionKey = keyof typeof sectionComponents & string
