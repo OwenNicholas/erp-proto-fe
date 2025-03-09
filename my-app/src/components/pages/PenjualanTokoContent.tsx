@@ -41,11 +41,12 @@ export default function PenjualanTokoContent() {
     { invoice: "", hargaSatuan: "Rp.0", jumlah: "1", discountPerItem: "0", total: "Rp.0", description: "", stock: "" },
   ]);
 
-  const [discountType, setDiscountType] = useState<"none" | "percent" | "amount">("none");
+  const [discountType, setDiscountType] = useState<"none" | "percent" | "amount" | "total" >("none");
   const [discountPercent, setDiscountPercent] = useState<number>(0);
-  const [focusedRow, setFocusedRow] = useState<number | null>(null); // Track focused row for dropdown
-  const [inventory, setInventory] = useState([]); // Store inventory data
-  const [filteredItems, setFilteredItems] = useState([]); // Store filtered items
+  const [totalTotalDiscount, setTotalTotalDiscount] = useState<number>(0);
+  const [focusedRow, setFocusedRow] = useState<number | null>(null); 
+  const [inventory, setInventory] = useState([]); 
+  const [filteredItems, setFilteredItems] = useState([]);
   const [isPaymentDialogOpen, setIsPaymentDialogOpen] = useState(false);
   const [isConfirmDialogOpen, setIsConfirmDialogOpen] = useState(false);
   const [paymentMethod, setPaymentMethod] = useState("");
@@ -70,7 +71,6 @@ export default function PenjualanTokoContent() {
     }
   };
 
-  // Function to safely parse a price string into a number
   const parsePrice = (value: string | undefined): number => {
     if (!value) return 0;
   
@@ -107,9 +107,9 @@ export default function PenjualanTokoContent() {
       const discount = parsePrice(updatedInvoices[index].discountPerItem);
 
       const newTotal = price * quantity - discount * quantity;
+
       updatedInvoices[index].total = formatRupiah(Math.max(newTotal, 0));
     }
-
     setInvoices(updatedInvoices);
   };
 
@@ -174,6 +174,10 @@ export default function PenjualanTokoContent() {
       const discountValue = (subtotal * discountPercent) / 100;
       subtotal -= discountValue;
     }
+
+    else if (discountType == "total" && totalTotalDiscount > 0){
+      subtotal -= totalTotalDiscount;
+    }
   
     // Convert subtotal to ensure exactly 3 decimal places (thousands format)
     const formattedSubtotal = (subtotal).toFixed(3);
@@ -207,6 +211,8 @@ export default function PenjualanTokoContent() {
       );
     } else if (discountType === "percent") {
         totalDiscount = (subtotal * discountPercent) / 100;
+    } else if (discountType == "total"){
+        totalDiscount = totalTotalDiscount;
     }
     
     const payload = {
@@ -219,7 +225,7 @@ export default function PenjualanTokoContent() {
       customer_name: customerName,
       location: "toko",
     };
-    console.log("🔹 Payload being sent:", JSON.stringify(payload, null, 2));
+    console.log("Payload being sent:", JSON.stringify(payload, null, 2));
 
     try {
       const response = await fetch("http://localhost:8080/api/transactions", {
@@ -229,6 +235,7 @@ export default function PenjualanTokoContent() {
       });
       if (!response.ok) throw new Error("Failed to process transaction");
       alert("Sale successful!");
+      setDiscountType("none");
       setInvoices([
         { invoice: "", hargaSatuan: "Rp.0", jumlah: "1", discountPerItem: "0", total: "Rp.0", description: "", stock: "" },
       ]);
@@ -246,11 +253,14 @@ export default function PenjualanTokoContent() {
           <Select
             onValueChange={(value) => {
               setDiscountPercent(0);
+              setTotalTotalDiscount(0);
               setInvoices(invoices.map((invoice) => ({ ...invoice, discountPerItem: "0" }))); // Reset discount per item
               if (value === "percent") {
                 setDiscountType("percent");      
               } else if (value === "amount") {
                 setDiscountType("amount");
+              } else if (value == "total"){
+                setDiscountType("total");
               } else {
                 setDiscountType("none");
               }
@@ -263,7 +273,8 @@ export default function PenjualanTokoContent() {
               <SelectGroup>
                 <SelectLabel>Fitur</SelectLabel>
                 <SelectItem value="percent">Diskon %</SelectItem>
-                <SelectItem value="amount">Diskon Rp</SelectItem>
+                <SelectItem value="amount">Diskon Per Pc</SelectItem>
+                <SelectItem value="total">Diskon Total</SelectItem>
                 <SelectItem value="none">Cancel</SelectItem>
               </SelectGroup>
             </SelectContent>
@@ -277,6 +288,18 @@ export default function PenjualanTokoContent() {
               type="number"
               value={discountPercent}
               onChange={(e) => setDiscountPercent(parseFloat(e.target.value) || 0)}
+              className="ml-2 w-32"
+            />
+          </div>
+        )}
+
+        {discountType === "total" && (
+          <div className="mb-4">
+            <label className="font-medium">Diskon Total:</label>
+            <Input
+              type="number"
+              value={totalTotalDiscount}
+              onChange={(e) => setTotalTotalDiscount(parseFloat(e.target.value) || 0)}
               className="ml-2 w-32"
             />
           </div>

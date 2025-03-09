@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useCallback } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
@@ -54,7 +54,6 @@ export default function LaporanHarian() {
   const [transactions, setTransactions] = useState<Transaction[]>([]);
   const [filteredTransactions, setFilteredTransactions] = useState<Transaction[]>([]);
   const [salesData, setSalesData] = useState<Sale[]>([]);
-  const [groupedSales, setGroupedSales] = useState<SaleGroup>({});
 
   useEffect(() => {
     fetchSales();
@@ -88,7 +87,7 @@ export default function LaporanHarian() {
   };
 
   // Filter transactions based on the selected date
-  const filterTransactionsByDate = () => {
+  const filterTransactionsByDate = useCallback(() => {
     const formattedSelectedDate = format(selectedDate, "yyyy-MM-dd");
 
     const filtered = transactions.filter((transaction) => {
@@ -97,7 +96,11 @@ export default function LaporanHarian() {
     });
 
     setFilteredTransactions(filtered);
-  };
+  }, [selectedDate, transactions]); // ✅ Proper dependencies
+
+  useEffect(() => {
+    filterTransactionsByDate();
+  }, [filterTransactionsByDate]);
 
   // Group transactions by payment method
   const getSalesByPaymentMethod = (): SaleGroup => {

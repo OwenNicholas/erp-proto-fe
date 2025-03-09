@@ -1,6 +1,4 @@
-"use client";
-
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useCallback } from "react";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { format, parseISO } from "date-fns";
@@ -29,12 +27,6 @@ export default function LaporanBulananContent() {
     fetchTransactions();
   }, []);
 
-  useEffect(() => {
-    if (salesData.length > 0 && transactions.length > 0) {
-      groupSalesByMonth();
-    }
-  }, [salesData, transactions]);
-
   const fetchSales = async () => {
     try {
       const response = await fetch("http://localhost:8080/api/sales");
@@ -57,7 +49,8 @@ export default function LaporanBulananContent() {
     }
   };
 
-  const groupSalesByMonth = () => {
+  // ✅ Fix: Use useCallback to prevent unnecessary re-creations
+  const groupSalesByMonth = useCallback(() => {
     const grouped: Record<string, number> = {};
 
     salesData.forEach((sale) => {
@@ -65,7 +58,7 @@ export default function LaporanBulananContent() {
       if (!transaction || !transaction.timestamp) return;
 
       const saleDate = parseISO(transaction.timestamp);
-      const monthYear = format(saleDate, "MMMM yyyy", { locale: id }); // Full month name
+      const monthYear = format(saleDate, "MMMM yyyy", { locale: id });
 
       if (!grouped[monthYear]) {
         grouped[monthYear] = 0;
@@ -74,7 +67,14 @@ export default function LaporanBulananContent() {
     });
 
     setGroupedSales(grouped);
-  };
+  }, [salesData, transactions]); // ✅ Dependencies added properly
+
+  // ✅ Fix: Include groupSalesByMonth in dependencies
+  useEffect(() => {
+    if (salesData.length > 0 && transactions.length > 0) {
+      groupSalesByMonth();
+    }
+  }, [salesData, transactions, groupSalesByMonth]); // ✅ Now includes the correct dependencies
 
   return (
     <div className="p-8 max-w-5xl mx-auto">
