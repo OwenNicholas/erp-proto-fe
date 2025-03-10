@@ -44,6 +44,7 @@ export type Transaction = {
   customer_name: string;
   timestamp: string;
   location: string;
+  total_price: number;
 };
 
 export default function TransactionHistoryContent() {
@@ -142,6 +143,15 @@ export default function TransactionHistoryContent() {
         }).format(amount);
         return <div className="text-right">{formatted}</div>;
       },
+    },
+    {
+      accessorKey: "total_price",
+      header: () => <div className="text-right">Total</div>, // Align header
+      cell: ({ row }) => (
+        <div className="text-right">
+          Rp. {row.getValue("total_price")}
+        </div>
+      ),
     },
     {
       accessorKey: "payment_id",

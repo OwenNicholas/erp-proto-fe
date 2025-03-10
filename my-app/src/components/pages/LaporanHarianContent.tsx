@@ -102,27 +102,34 @@ export default function LaporanHarian() {
     filterTransactionsByDate();
   }, [filterTransactionsByDate]);
 
-  // Group transactions by payment method
-  const getSalesByPaymentMethod = (): SaleGroup => {
-    const groupedSales: SaleGroup = {};
+  // Group transactions by payment method and consolidate customers
+const getSalesByPaymentMethod = (): SaleGroup => {
+  const groupedSales: SaleGroup = {};
 
-    filteredTransactions.forEach((transaction) => {
-      const method = paymentMethodsMap[transaction.payment_id] || "Unknown";
-      if (!groupedSales[method]) groupedSales[method] = [];
+  filteredTransactions.forEach((transaction) => {
+    const method = paymentMethodsMap[transaction.payment_id] || "Unknown";
+    if (!groupedSales[method]) groupedSales[method] = [];
 
-      // Find corresponding sales for this transaction
-      const relatedSales = salesData.filter((sale) => sale.transaction_id === transaction.transaction_id);
+    // Find corresponding sales for this transaction
+    const relatedSales = salesData.filter((sale) => sale.transaction_id === transaction.transaction_id);
 
-      relatedSales.forEach((sale) => {
+    relatedSales.forEach((sale) => {
+      // Check if customer already exists in the array
+      const existingEntry = groupedSales[method].find((entry) => entry.customer === transaction.customer_name);
+      
+      if (existingEntry) {
+        existingEntry.amount += sale.total; // Accumulate amount if customer exists
+      } else {
         groupedSales[method].push({
           customer: transaction.customer_name,
           amount: sale.total,
         });
-      });
+      }
     });
+  });
 
-    return groupedSales;
-  };
+  return groupedSales;
+};
 
   // Compute total per payment method
   const computeTotal = (sales: { customer: string; amount: number }[]): number => {
