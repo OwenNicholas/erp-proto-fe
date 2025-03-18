@@ -17,13 +17,11 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
 import { AiOutlinePlus, AiOutlineMinus } from "react-icons/ai";
 
-// 🔹 Define Transfer Data Type
 export type TransferData = {
   item_id: string;
   quantity: number;
 };
 
-// 🔹 Define API Payload Type
 export type TransferPayload = {
   source: string;
   destination: string;
@@ -132,9 +130,9 @@ export default function PindahanContent() {
             <SelectContent>
               <SelectGroup>
                 <SelectLabel>Inventories</SelectLabel>
-                <SelectItem value="inventory_gudang">Gudang</SelectItem>
-                <SelectItem value="inventory_toko">Toko</SelectItem>
-                <SelectItem value="inventory_tiktok">TikTok</SelectItem>
+                <SelectItem value="gudang">Gudang</SelectItem>
+                <SelectItem value="toko">Toko</SelectItem>
+                <SelectItem value="tiktok">TikTok</SelectItem>
               </SelectGroup>
             </SelectContent>
           </Select>
@@ -148,9 +146,9 @@ export default function PindahanContent() {
             <SelectContent>
               <SelectGroup>
                 <SelectLabel>Inventories</SelectLabel>
-                <SelectItem value="inventory_gudang">Gudang</SelectItem>
-                <SelectItem value="inventory_toko">Toko</SelectItem>
-                <SelectItem value="inventory_tiktok">TikTok</SelectItem>
+                <SelectItem value="gudang">Gudang</SelectItem>
+                <SelectItem value="toko">Toko</SelectItem>
+                <SelectItem value="tiktok">TikTok</SelectItem>
               </SelectGroup>
             </SelectContent>
           </Select>

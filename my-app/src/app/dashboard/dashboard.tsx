@@ -27,7 +27,7 @@ import TerimaBarangContent from "@/components/pages/TerimaBarangContent";
 import ReturBarangContent from "@/components/pages/ReturBarangContent";
 import LaporanHarianContent from "@/components/pages/LaporanHarianContent";
 import LaporanBulananContent from "@/components/pages/LaporanBulananContent";
-
+import HistoryPindahanHarianContent from "@/components/pages/HistoryPindahanHarianContent";
 
 
 // Map sections to components
@@ -38,12 +38,13 @@ const sectionComponents: Record<string, JSX.Element> = {
   "Penjualan Gudang": <PenjualanGudangContent />,
   "Telusuri Item lewat ID": <TelusuriItemContent />, 
   "History Transaksi": <TransactionContent />, 
-  "History Pindahan": <HistoryPindahanContent />, 
   "Pindahan": <PindahanContent />, 
   "Retur Barang": <ReturBarangContent />, 
   "Terima Barang": <TerimaBarangContent />,
-  "Harian": <LaporanHarianContent />,
-  "Bulanan": <LaporanBulananContent />,
+  "Penjualan Harian": <LaporanHarianContent />,
+  "Penjualan Bulanan": <LaporanBulananContent />,
+  "Pindahan Harian": <HistoryPindahanHarianContent/>,
+  "Pindahan Bulanan": <HistoryPindahanContent />,
 };
 
 export type SectionKey = keyof typeof sectionComponents & string

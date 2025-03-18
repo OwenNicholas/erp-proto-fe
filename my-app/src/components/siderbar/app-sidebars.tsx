@@ -38,7 +38,6 @@ const data = {
       items: [
         { title: "Telusuri Item lewat ID", url: "#" },
         { title: "History Transaksi", url: "#" },
-        { title: "History Pindahan", url: "#" },
       ],
     },
     {
@@ -56,8 +55,10 @@ const data = {
     url: "#",
     icon: FaBookOpen,
     items: [
-      { title: "Harian", url: "#" },
-      { title: "Bulanan", url: "#" },
+      { title: "Penjualan Harian", url: "#" },
+      { title: "Penjualan Bulanan", url: "#" },
+      { title: "Pindahan Harian", url: "#" },
+      { title: "Pindahan Bulanan", url: "#" },
     ],
     },
   ],
