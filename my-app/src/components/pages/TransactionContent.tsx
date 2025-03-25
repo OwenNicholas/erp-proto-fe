@@ -45,6 +45,7 @@ export type Transaction = {
   timestamp: string;
   location: string;
   total_price: number;
+  down_payment: number;
 };
 
 export default function TransactionHistoryContent() {
@@ -65,6 +66,7 @@ export default function TransactionHistoryContent() {
     4: "Cek / GIRO",
     5: "QR",
     6: "Hutang",
+    7: "DP",
   };
 
   // Fetch transaction history from API
@@ -159,6 +161,25 @@ export default function TransactionHistoryContent() {
       cell: ({ row }) => {
         const paymentId = row.getValue("payment_id") as number;
         return <div className="text-center">{paymentMethodsMap[paymentId] || "Unknown"}</div>;
+      },
+    },
+    {
+      accessorKey: "down_payment",
+      header: "Terbayar",
+      cell: ({ row }) => (
+        <div className="text-right">
+          Rp. {row.getValue("down_payment")}
+        </div>
+      ),
+    },
+    {
+      accessorKey: "sisa",
+      header: "Sisa",
+      cell: ({ row }) => {
+        const total = row.getValue("total_price") as number;
+        const down = row.getValue("down_payment") as number;
+        const sisa = total - down;
+        return <div className="text-right">Rp. {sisa.toLocaleString("id-ID")}</div>;
       },
     },
     {

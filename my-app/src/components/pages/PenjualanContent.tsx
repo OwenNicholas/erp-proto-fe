@@ -54,9 +54,12 @@ export default function PenjualanContent({ location }: locations) {
   const [filteredItems, setFilteredItems] = useState([]);
   const [isPaymentDialogOpen, setIsPaymentDialogOpen] = useState(false);
   const [isConfirmDialogOpen, setIsConfirmDialogOpen] = useState(false);
+  const [isDPDialogOpen, setIsDPDialogOpen] = useState(false);
   const [paymentMethod, setPaymentMethod] = useState("");
   const [paymentStatus, setPaymentStatus] = useState("");
   const [customerName, setCustomerName] = useState("");
+  const [dpAmount, setDpAmount] = useState<number>(0);
+
 
   // Fetch inventory on component mount
   useEffect(() => {
@@ -233,6 +236,7 @@ export default function PenjualanContent({ location }: locations) {
       customer_name: customerName,
       total_price: totalPrice,
       location: location,
+      down_payment: dpAmount,
     };
     console.log("Payload being sent:", JSON.stringify(payload, null, 2));
 
@@ -419,6 +423,7 @@ export default function PenjualanContent({ location }: locations) {
                     <SelectItem value="4">Cek / GIRO</SelectItem>
                     <SelectItem value="5">QR</SelectItem>
                     <SelectItem value="6">Hutang</SelectItem>
+                    <SelectItem value="7">DP</SelectItem>
                 </SelectGroup>
                 </SelectContent>
             </Select>
@@ -446,8 +451,14 @@ export default function PenjualanContent({ location }: locations) {
                     alert("❌ Please select a payment method.");
                     return;
                     }
-                    setIsPaymentDialogOpen(false);
-                    setIsConfirmDialogOpen(true);
+                    if (paymentMethod === "7") {
+                        // If DP is selected, open DP dialog instead of confirming sale immediately.
+                        setIsPaymentDialogOpen(false);
+                        setIsDPDialogOpen(true);
+                    } else {
+                        setIsPaymentDialogOpen(false);
+                        setIsConfirmDialogOpen(true);
+                    }
                 }}
                 >
                 Confirm
@@ -455,6 +466,39 @@ export default function PenjualanContent({ location }: locations) {
             </DialogFooter>
             </DialogContent>
         </Dialog>
+
+        {/* DP Dialog for Down Payment */}
+        <Dialog open={isDPDialogOpen} onOpenChange={setIsDPDialogOpen}>
+          <DialogContent>
+            <DialogTitle>Enter DP Details</DialogTitle>
+            <Input
+              type="number"
+              placeholder="Enter DP Amount"
+              value={dpAmount}
+              onChange={(e) => setDpAmount(parseFloat(e.target.value) || 0)}
+              className="mt-2"
+            />
+            <div className="mt-2">
+              Sisa: Rp.{" "}
+              {(() => {
+                const total = parsePrice(calculateGrandTotal());
+                const sisa = total - dpAmount;
+                return sisa.toLocaleString("id-ID");
+              })()}
+            </div>
+            <DialogFooter>
+              <Button
+                onClick={() => {
+                  setIsDPDialogOpen(false);
+                  setIsConfirmDialogOpen(true);
+                }}
+              >
+                Confirm DP
+              </Button>
+            </DialogFooter>
+          </DialogContent>
+        </Dialog>
+
 
       {/* Final Confirmation Dialog */}
       <Dialog open={isConfirmDialogOpen} onOpenChange={setIsConfirmDialogOpen}>
