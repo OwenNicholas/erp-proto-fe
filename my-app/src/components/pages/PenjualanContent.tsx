@@ -35,8 +35,13 @@ interface InventoryItem {
   quantity: string;
 }
 
+interface locations{
+    location: "toko" | "tiktok" | "gudang";
+}
 
-export default function PenjualanGudangContent() {
+
+export default function PenjualanContent({ location }: locations) {
+
   const [invoices, setInvoices] = useState([
     { invoice: "", hargaSatuan: "Rp.0", jumlah: "1", discountPerItem: "0", total: "Rp.0", description: "", stock: "" },
   ]);
@@ -56,11 +61,11 @@ export default function PenjualanGudangContent() {
   // Fetch inventory on component mount
   useEffect(() => {
     fetchInventory();
-  }, []);
+  }, [location]);
 
   const fetchInventory = async () => {
     try {
-      const response = await fetch("http://localhost:8080/api/inventory/gudang");
+      const response = await fetch(`http://localhost:8080/api/inventory/${location}`);
       if (!response.ok) {
         throw new Error("Failed to fetch inventory");
       }
@@ -227,7 +232,7 @@ export default function PenjualanGudangContent() {
       payment_status: paymentStatus,
       customer_name: customerName,
       total_price: totalPrice,
-      location: "gudang",
+      location: location,
     };
     console.log("Payload being sent:", JSON.stringify(payload, null, 2));
 

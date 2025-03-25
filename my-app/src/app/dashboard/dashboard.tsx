@@ -16,9 +16,7 @@ import {
 } from "@/components/ui/sidebar";
 
 import DashboardContent from "@/components/pages/DashboardContent";
-import PenjualanTokoContent from "@/components/pages/PenjualanTokoContent";
-import PenjualanTiktokContent from "@/components/pages/PenjualanTiktokContent";
-import PenjualanGudangContent from "@/components/pages/PenjualanGudangContent";
+import PenjualanContent from "@/components/pages/PenjualanContent";
 import PindahanContent from "@/components/pages/Pindahan";
 import TelusuriItemContent from "@/components/pages/TelusuriItemContent";
 import HistoryPindahanContent from "@/components/pages/HistoryPindahan";
@@ -33,9 +31,9 @@ import HistoryPindahanHarianContent from "@/components/pages/HistoryPindahanHari
 // Map sections to components
 const sectionComponents: Record<string, JSX.Element> = {
   Dashboard: <DashboardContent />,
-  "Penjualan Toko": <PenjualanTokoContent />,
-  "Penjualan TikTok": <PenjualanTiktokContent />, 
-  "Penjualan Gudang": <PenjualanGudangContent />,
+  "Penjualan Toko": <PenjualanContent location="toko" />,
+  "Penjualan TikTok": <PenjualanContent location="tiktok" />,
+  "Penjualan Gudang": <PenjualanContent location="gudang" />,
   "Telusuri Item lewat ID": <TelusuriItemContent />, 
   "History Transaksi": <TransactionContent />, 
   "Pindahan": <PindahanContent />, 
