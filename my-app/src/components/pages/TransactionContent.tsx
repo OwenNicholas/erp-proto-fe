@@ -166,20 +166,31 @@ export default function TransactionHistoryContent() {
     {
       accessorKey: "down_payment",
       header: "Terbayar",
-      cell: ({ row }) => (
-        <div className="text-right">
-          Rp. {row.getValue("down_payment")}
-        </div>
-      ),
+      cell: ({ row }) => {
+        const paymentId = row.getValue("payment_id") as number;
+        const totalPrice = row.getValue("total_price") as number;
+        const downPayment = row.getValue("down_payment") as number;
+        
+        return (
+          <div className="text-right">
+            Rp. {paymentId === 7 ? downPayment : totalPrice}
+          </div>
+        );
+      },
     },
     {
       accessorKey: "sisa",
       header: "Sisa",
       cell: ({ row }) => {
+        const paymentId = row.getValue("payment_id") as number;
         const total = row.getValue("total_price") as number;
         const down = row.getValue("down_payment") as number;
-        const sisa = total - down;
-        return <div className="text-right">Rp. {sisa.toLocaleString("id-ID")}</div>;
+        
+        if (paymentId === 7) {
+          const sisa = total - down;
+          return <div className="text-right">Rp. {sisa.toLocaleString("id-ID")}</div>;
+        }
+        return <div className="text-right">Rp. 0</div>;
       },
     },
     {
