@@ -63,21 +63,21 @@ export default function PenjualanContent({ location }: locations) {
 
   // Fetch inventory on component mount
   useEffect(() => {
+    const fetchInventory = async () => {
+      try {
+        const response = await fetch(`http://localhost:8080/api/inventory/${location}`);
+        if (!response.ok) {
+          throw new Error("Failed to fetch inventory");
+        }
+        const data = await response.json();
+        setInventory(data.data || []);
+      } catch (error) {
+        console.error("Error fetching inventory:", error);
+      }
+    };
+
     fetchInventory();
   }, [location]);
-
-  const fetchInventory = async () => {
-    try {
-      const response = await fetch(`http://localhost:8080/api/inventory/${location}`);
-      if (!response.ok) {
-        throw new Error("Failed to fetch inventory");
-      }
-      const data = await response.json();
-      setInventory(data.data || []);
-    } catch (error) {
-      console.error("Error fetching inventory:", error);
-    }
-  };
 
   const parsePrice = (value: string | undefined): number => {
     if (!value) return 0;

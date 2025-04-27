@@ -60,9 +60,21 @@ export default function LaporanHarian() {
     fetchTransactions();
   }, []);
 
+  // Filter transactions based on the selected date
+  const filterTransactionsByDate = useCallback(() => {
+    const formattedSelectedDate = format(selectedDate, "yyyy-MM-dd");
+
+    const filtered = transactions.filter((transaction) => {
+      const transactionDate = format(parseISO(transaction.timestamp), "yyyy-MM-dd");
+      return transactionDate === formattedSelectedDate;
+    });
+
+    setFilteredTransactions(filtered);
+  }, [selectedDate, transactions]); // ✅ Proper dependencies
+
   useEffect(() => {
     filterTransactionsByDate();
-  }, [selectedDate, transactions]);
+  }, [selectedDate, transactions, filterTransactionsByDate]);
 
   const fetchSales = async () => {
     try {
@@ -85,22 +97,6 @@ export default function LaporanHarian() {
       console.error("Error fetching transactions:", error);
     }
   };
-
-  // Filter transactions based on the selected date
-  const filterTransactionsByDate = useCallback(() => {
-    const formattedSelectedDate = format(selectedDate, "yyyy-MM-dd");
-
-    const filtered = transactions.filter((transaction) => {
-      const transactionDate = format(parseISO(transaction.timestamp), "yyyy-MM-dd");
-      return transactionDate === formattedSelectedDate;
-    });
-
-    setFilteredTransactions(filtered);
-  }, [selectedDate, transactions]); // ✅ Proper dependencies
-
-  useEffect(() => {
-    filterTransactionsByDate();
-  }, [filterTransactionsByDate]);
 
   // Group transactions by payment method and consolidate customers
 const getSalesByPaymentMethod = (): SaleGroup => {
