@@ -77,35 +77,46 @@ export default function LaporanBulananContent() {
   }, [salesData, transactions, groupSalesByMonth]); // ✅ Now includes the correct dependencies
 
   return (
-    <div className="flex flex-col justify-center items-center min-h-[85vh] mt-[-40px]">
-    <div className="w-full max-w-5xl">
-      <Card className="shadow-lg rounded-2xl border border-gray-300">
-        <CardHeader className="text-center">
-          <CardTitle className="text-3xl font-bold">Laporan Penjualan Bulanan</CardTitle>
+    <div className="p-6 space-y-6">
+      {/* Header Section */}
+      <div className="flex justify-between items-center">
+        <h1 className="text-2xl font-bold text-gray-900">Laporan Penjualan Bulanan</h1>
+      </div>
+
+      {/* Report Section */}
+      <Card className="shadow-lg">
+        <CardHeader className="bg-gray-50 border-b">
+          <CardTitle className="text-xl font-semibold">Ringkasan Penjualan Bulanan</CardTitle>
         </CardHeader>
         <CardContent className="p-6">
           {Object.keys(groupedSales).length === 0 ? (
-            <p className="text-center text-gray-500 text-2xl font-semibold py-8">
-              ❌ No sales data available.
-            </p>
+            <div className="text-center py-8">
+              <p className="text-gray-500 text-lg font-medium">Tidak ada data penjualan yang tersedia.</p>
+            </div>
           ) : (
             <div className="overflow-x-auto">
-              <Table className="w-full text-lg">
+              <Table>
                 <TableHeader>
-                  <TableRow className="bg-gray-100 text-xl">
-                    <TableHead className="px-6 py-4">Bulan</TableHead>
-                    <TableHead className="px-6 py-4 text-right">💰 Total Penjualan</TableHead>
+                  <TableRow className="bg-gray-50">
+                    <TableHead className="font-semibold">Bulan</TableHead>
+                    <TableHead className="font-semibold text-right">Total Penjualan</TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>
-                  {Object.entries(groupedSales).map(([month, total]) => (
-                    <TableRow key={month} className="border-b text-xl">
-                      <TableCell className="px-6 py-4">{month}</TableCell>
-                      <TableCell className="px-6 py-4 text-right font-semibold">
-                        Rp. {total.toLocaleString("id-ID")}
-                      </TableCell>
-                    </TableRow>
-                  ))}
+                  {Object.entries(groupedSales)
+                    .sort((a, b) => {
+                      const dateA = new Date(a[0]);
+                      const dateB = new Date(b[0]);
+                      return dateB.getTime() - dateA.getTime();
+                    })
+                    .map(([month, total]) => (
+                      <TableRow key={month} className="hover:bg-gray-50">
+                        <TableCell className="font-medium">{month}</TableCell>
+                        <TableCell className="text-right font-medium">
+                          Rp. {total.toLocaleString("id-ID")}
+                        </TableCell>
+                      </TableRow>
+                    ))}
                 </TableBody>
               </Table>
             </div>
@@ -113,6 +124,5 @@ export default function LaporanBulananContent() {
         </CardContent>
       </Card>
     </div>
-  </div>
   );
 }

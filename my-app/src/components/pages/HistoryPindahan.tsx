@@ -45,62 +45,75 @@ export default function HistoryPindahanContent() {
   );
 
   return (
-    <div className="flex flex-col justify-center items-center min-h-[85vh] mt-[-40px]">
-      <div className="w-full max-w-5xl">
-        <Card className="shadow-md rounded-lg">
-          <CardHeader className="text-center">
-            <CardTitle className="text-xl font-bold">History Pindahan Bulanan</CardTitle>
-          </CardHeader>
-          <CardContent>
-            {loading ? (
-              <div className="text-center text-gray-500">Loading...</div>
-            ) : error ? (
-              <div className="text-center text-red-500">{error}</div>
-            ) : history.length === 0 ? (
-              <div className="text-center text-gray-500">No history records found.</div>
-            ) : (
-              <div className="overflow-x-auto">
-                {Object.entries(groupedHistory)
-                  .sort(
-                    (a, b) =>
-                      new Date(b[1][0].timestamp).getTime() - new Date(a[1][0].timestamp).getTime()
-                  ) // Sort months in descending order
-                  .map(([monthYear, entries]) => (
-                    <div key={monthYear} className="mb-6">
-                      <h3 className="text-lg font-semibold my-4 border-b pb-2">{monthYear}</h3>
-                      <Table className="w-full">
-                        <TableHeader>
-                          <TableRow>
-                            <TableHead className="text-left">No.</TableHead>
-                            <TableHead className="text-left">ID Barang</TableHead>
-                            <TableHead className="text-right">Quantity</TableHead>
-                            <TableHead className="text-left">Sumber</TableHead>
-                            <TableHead className="text-left">Destinasi</TableHead>
-                            <TableHead className="text-right">Waktu</TableHead>
-                          </TableRow>
-                        </TableHeader>
-                        <TableBody>
-                          {entries.map((entry) => (
-                            <TableRow key={entry.pindahan_id}>
-                              <TableCell>{entry.pindahan_id}</TableCell>
-                              <TableCell>{entry.item_id}</TableCell>
-                              <TableCell className="text-right">{entry.quantity}</TableCell>
-                              <TableCell>{entry.source}</TableCell>
-                              <TableCell>{entry.destination}</TableCell>
-                              <TableCell className="text-right">
-                                {format(parseISO(entry.timestamp), "dd/MM/yyyy HH:mm:ss")}
-                              </TableCell>
-                            </TableRow>
-                          ))}
-                        </TableBody>
-                      </Table>
-                    </div>
-                  ))}
-              </div>
-            )}
-          </CardContent>
-        </Card>
+    <div className="p-6 space-y-6">
+      {/* Header Section */}
+      <div className="flex justify-between items-center">
+        <h1 className="text-2xl font-bold text-gray-900">History Pindahan Bulanan</h1>
       </div>
+
+      {/* History Section */}
+      <Card className="shadow-lg">
+        <CardHeader className="bg-gray-50 border-b">
+          <CardTitle className="text-xl font-semibold">Ringkasan Pindahan Bulanan</CardTitle>
+        </CardHeader>
+        <CardContent className="p-6">
+          {loading ? (
+            <div className="text-center py-8">
+              <p className="text-gray-500 text-lg font-medium">Loading...</p>
+            </div>
+          ) : error ? (
+            <div className="text-center py-8">
+              <p className="text-red-500 text-lg font-medium">{error}</p>
+            </div>
+          ) : history.length === 0 ? (
+            <div className="text-center py-8">
+              <p className="text-gray-500 text-lg font-medium">Tidak ada data history yang tersedia.</p>
+            </div>
+          ) : (
+            <div className="space-y-6">
+              {Object.entries(groupedHistory)
+                .sort((a, b) => new Date(b[1][0].timestamp).getTime() - new Date(a[1][0].timestamp).getTime())
+                .map(([monthYear, entries]) => (
+                  <Card key={monthYear} className="shadow-sm">
+                    <CardHeader className="bg-gray-50 border-b">
+                      <CardTitle className="text-lg font-semibold">{monthYear}</CardTitle>
+                    </CardHeader>
+                    <CardContent className="p-4">
+                      <div className="overflow-x-auto">
+                        <Table>
+                          <TableHeader>
+                            <TableRow className="bg-gray-50">
+                              <TableHead className="font-semibold">No.</TableHead>
+                              <TableHead className="font-semibold">ID Barang</TableHead>
+                              <TableHead className="font-semibold text-right">Quantity</TableHead>
+                              <TableHead className="font-semibold">Sumber</TableHead>
+                              <TableHead className="font-semibold">Destinasi</TableHead>
+                              <TableHead className="font-semibold text-right">Waktu</TableHead>
+                            </TableRow>
+                          </TableHeader>
+                          <TableBody>
+                            {entries.map((entry) => (
+                              <TableRow key={entry.pindahan_id} className="hover:bg-gray-50">
+                                <TableCell className="font-medium">{entry.pindahan_id}</TableCell>
+                                <TableCell className="font-medium">{entry.item_id}</TableCell>
+                                <TableCell className="text-right font-medium">{entry.quantity}</TableCell>
+                                <TableCell className="font-medium">{entry.source}</TableCell>
+                                <TableCell className="font-medium">{entry.destination}</TableCell>
+                                <TableCell className="text-right font-medium">
+                                  {format(parseISO(entry.timestamp), "dd/MM/yyyy HH:mm:ss")}
+                                </TableCell>
+                              </TableRow>
+                            ))}
+                          </TableBody>
+                        </Table>
+                      </div>
+                    </CardContent>
+                  </Card>
+                ))}
+            </div>
+          )}
+        </CardContent>
+      </Card>
     </div>
   );
 }

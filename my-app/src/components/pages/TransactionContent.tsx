@@ -283,84 +283,98 @@ export default function TransactionHistoryContent() {
   });
 
   return (
-    <div className="w-full flex justify-center py-4">
-      <div className="w-full max-w-4xl">
-        {/* Display error message if fetch fails */}
-        {error && <div className="text-red-500 text-center py-2">{error}</div>}
-
+    <div className="p-6 space-y-6">
+      {/* Header Section */}
+      <div className="flex justify-between items-center">
+        <h1 className="text-2xl font-bold text-gray-900">History Transaksi</h1>
         <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
           <DialogTrigger asChild>
-            <Button variant="outline" className="mb-4">Koreksi Status Pembayaran</Button>
+            <Button variant="outline" className="flex items-center gap-2">
+              <span>Koreksi Status Pembayaran</span>
+            </Button>
           </DialogTrigger>
-          <DialogContent>
+          <DialogContent className="sm:max-w-[425px]">
             <DialogHeader>
-              <DialogTitle>Koreksi Status Pembayaran</DialogTitle>
+              <DialogTitle className="text-xl font-semibold">Koreksi Status Pembayaran</DialogTitle>
             </DialogHeader>
-
-            {/* Transaction ID Input */}
-            <Input
-              placeholder="Masukkan No. Faktur"
-              value={selectedTransactionId}
-              onChange={(e) => setSelectedTransactionId(e.target.value)}
-            />
-
-            {/* Payment Status Dropdown */}
-            <Select onValueChange={(value) => setNewPaymentStatus(value)} value={newPaymentStatus}>
-              <SelectTrigger className="w-full">
-                <SelectValue placeholder="Pilih Status Pembayaran" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="lunas">Lunas</SelectItem>
-                <SelectItem value="belum lunas">Belum Lunas</SelectItem>
-              </SelectContent>
-            </Select>
-
+            <div className="space-y-4 py-4">
+              <div className="space-y-2">
+                <label className="text-sm font-medium">No. Faktur</label>
+                <Input
+                  placeholder="Masukkan No. Faktur"
+                  value={selectedTransactionId}
+                  onChange={(e) => setSelectedTransactionId(e.target.value)}
+                />
+              </div>
+              <div className="space-y-2">
+                <label className="text-sm font-medium">Status Pembayaran</label>
+                <Select onValueChange={(value) => setNewPaymentStatus(value)} value={newPaymentStatus}>
+                  <SelectTrigger>
+                    <SelectValue placeholder="Pilih Status Pembayaran" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="lunas">Lunas</SelectItem>
+                    <SelectItem value="belum lunas">Belum Lunas</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+            </div>
             <DialogFooter>
               <Button variant="outline" onClick={() => setIsDialogOpen(false)}>Batal</Button>
-              <Button className="bg-blue-600 text-white" onClick={handleUpdatePaymentStatus}>Konfirmasi</Button>
+              <Button onClick={handleUpdatePaymentStatus}>Konfirmasi</Button>
             </DialogFooter>
           </DialogContent>
         </Dialog>
+      </div>
 
-        {/* Search Bar for Filtering */}
-        <div className="flex items-center py-4">
-          <Input
-            placeholder="Cari pakai nama customer..."
-            value={searchQuery}
-            onChange={(event) => setSearchQuery(event.target.value)}
-            className="max-w-sm"
-          />
-          <DropdownMenu>
-            <DropdownMenuTrigger asChild>
-              <Button variant="outline" className="ml-auto">
-                Columns <ChevronDown />
-              </Button>
-            </DropdownMenuTrigger>
-            <DropdownMenuContent align="end">
-              {table.getAllColumns()
-                .filter((column) => column.getCanHide())
-                .map((column) => (
-                  <DropdownMenuCheckboxItem
-                    key={column.id}
-                    className="capitalize"
-                    checked={column.getIsVisible()}
-                    onCheckedChange={(value) => column.toggleVisibility(!!value)}
-                  >
-                    {column.id}
-                  </DropdownMenuCheckboxItem>
-                ))}
-            </DropdownMenuContent>
-          </DropdownMenu>
+      {/* Error Message */}
+      {error && (
+        <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-lg">
+          {error}
         </div>
+      )}
 
-        {/* Table */}
-        <div className="rounded-md border mx-auto bg-white shadow-md">
-          <Table className="table-auto w-full">
+      {/* Filters Section */}
+      <div className="flex items-center gap-4 bg-white p-4 rounded-lg shadow-sm">
+        <Input
+          placeholder="Cari transaksi..."
+          value={searchQuery}
+          onChange={(event) => setSearchQuery(event.target.value)}
+          className="max-w-md"
+        />
+        <DropdownMenu>
+          <DropdownMenuTrigger asChild>
+            <Button variant="outline" className="ml-auto flex items-center gap-2">
+              <span>Kolom</span>
+              <ChevronDown className="h-4 w-4" />
+            </Button>
+          </DropdownMenuTrigger>
+          <DropdownMenuContent align="end" className="w-[200px]">
+            {table.getAllColumns()
+              .filter((column) => column.getCanHide())
+              .map((column) => (
+                <DropdownMenuCheckboxItem
+                  key={column.id}
+                  className="capitalize"
+                  checked={column.getIsVisible()}
+                  onCheckedChange={(value) => column.toggleVisibility(!!value)}
+                >
+                  {column.id}
+                </DropdownMenuCheckboxItem>
+              ))}
+          </DropdownMenuContent>
+        </DropdownMenu>
+      </div>
+
+      {/* Table Section */}
+      <div className="bg-white rounded-lg shadow-lg overflow-hidden">
+        <div className="overflow-x-auto">
+          <Table>
             <TableHeader>
               {table.getHeaderGroups().map((headerGroup) => (
-                <TableRow key={headerGroup.id}>
+                <TableRow key={headerGroup.id} className="bg-gray-50">
                   {headerGroup.headers.map((header) => (
-                    <TableHead key={header.id}>
+                    <TableHead key={header.id} className="font-semibold">
                       {header.isPlaceholder
                         ? null
                         : flexRender(header.column.columnDef.header, header.getContext())}
@@ -372,7 +386,7 @@ export default function TransactionHistoryContent() {
             <TableBody>
               {table.getRowModel().rows?.length ? (
                 table.getRowModel().rows.map((row) => (
-                  <TableRow key={row.id} data-state={row.getIsSelected() && "selected"}>
+                  <TableRow key={row.id} data-state={row.getIsSelected() && "selected"} className="hover:bg-gray-50">
                     {row.getVisibleCells().map((cell) => (
                       <TableCell key={cell.id} className="text-center">
                         {flexRender(cell.column.columnDef.cell, cell.getContext())}
@@ -382,8 +396,8 @@ export default function TransactionHistoryContent() {
                 ))
               ) : (
                 <TableRow>
-                  <TableCell colSpan={columns.length} className="h-24 text-center">
-                    No results found.
+                  <TableCell colSpan={columns.length} className="h-24 text-center text-gray-500">
+                    Tidak ada data yang ditemukan.
                   </TableCell>
                 </TableRow>
               )}

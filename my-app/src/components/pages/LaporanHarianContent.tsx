@@ -135,10 +135,10 @@ const getSalesByPaymentMethod = (): SaleGroup => {
   const salesByPaymentMethod = getSalesByPaymentMethod();
 
   return (
-    <div className="p-6 max-w-4xl mx-auto">
-      {/* Date Picker */}
-      <div className="flex justify-between items-center mb-6">
-        <h2 className="text-2xl font-bold">Laporan Penjualan Harian</h2>
+    <div className="p-6 space-y-6">
+      {/* Header Section */}
+      <div className="flex justify-between items-center">
+        <h1 className="text-2xl font-bold text-gray-900">Laporan Penjualan Harian</h1>
         <Popover>
           <PopoverTrigger asChild>
             <Button variant="outline" className="flex items-center gap-2">
@@ -156,44 +156,53 @@ const getSalesByPaymentMethod = (): SaleGroup => {
           </PopoverContent>
         </Popover>
       </div>
-  
-      {/* 🔹 Show "No Sales" message if there are no transactions */}
+
+      {/* Report Section */}
       {Object.keys(salesByPaymentMethod).length === 0 ? (
-        <div className="text-center text-gray-500 text-lg font-semibold mt-10">
-          ❌ Tidak ada penjualan di tanggal ini.
-        </div>
+        <Card className="shadow-lg">
+          <CardContent className="p-6">
+            <div className="text-center py-8">
+              <p className="text-gray-500 text-lg font-medium">Tidak ada penjualan di tanggal ini.</p>
+            </div>
+          </CardContent>
+        </Card>
       ) : (
-        Object.keys(salesByPaymentMethod).map((method) => (
-          <Card key={method} className="mb-6">
-            <CardHeader>
-              <CardTitle>{method}</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="flex justify-between text-xl font-semibold">
-                <span>Total:</span>
-                <span>Rp. {computeTotal(salesByPaymentMethod[method]).toLocaleString("id-ID")}</span>
-              </div>
-  
-              {/* Customer Breakdown Table */}
-              <Table className="mt-4">
-                <TableHeader>
-                  <TableRow>
-                    <TableHead>Nama Customer</TableHead>
-                    <TableHead className="text-right">Jumlah</TableHead>
-                  </TableRow>
-                </TableHeader>
-                <TableBody>
-                  {salesByPaymentMethod[method].map((entry, index) => (
-                    <TableRow key={index}>
-                      <TableCell>{entry.customer}</TableCell>
-                      <TableCell className="text-right">Rp. {entry.amount.toLocaleString("id-ID")}</TableCell>
-                    </TableRow>
-                  ))}
-                </TableBody>
-              </Table>
-            </CardContent>
-          </Card>
-        ))
+        <div className="space-y-6">
+          {Object.keys(salesByPaymentMethod).map((method) => (
+            <Card key={method} className="shadow-lg">
+              <CardHeader className="bg-gray-50 border-b">
+                <div className="flex justify-between items-center">
+                  <CardTitle className="text-xl font-semibold">{method}</CardTitle>
+                  <div className="text-lg font-medium">
+                    Total: Rp. {computeTotal(salesByPaymentMethod[method]).toLocaleString("id-ID")}
+                  </div>
+                </div>
+              </CardHeader>
+              <CardContent className="p-6">
+                <div className="overflow-x-auto">
+                  <Table>
+                    <TableHeader>
+                      <TableRow className="bg-gray-50">
+                        <TableHead className="font-semibold">Nama Customer</TableHead>
+                        <TableHead className="font-semibold text-right">Jumlah</TableHead>
+                      </TableRow>
+                    </TableHeader>
+                    <TableBody>
+                      {salesByPaymentMethod[method].map((entry, index) => (
+                        <TableRow key={index} className="hover:bg-gray-50">
+                          <TableCell className="font-medium">{entry.customer}</TableCell>
+                          <TableCell className="text-right font-medium">
+                            Rp. {entry.amount.toLocaleString("id-ID")}
+                          </TableCell>
+                        </TableRow>
+                      ))}
+                    </TableBody>
+                  </Table>
+                </div>
+              </CardContent>
+            </Card>
+          ))}
+        </div>
       )}
     </div>
   );

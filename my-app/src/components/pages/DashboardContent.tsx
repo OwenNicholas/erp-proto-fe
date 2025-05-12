@@ -173,58 +173,90 @@ const DashboardContent = () => {
 
 
   return (
-    <div className="p-4 text-lg font-semibold">
-      {/* Koreksi Buttons */}
-      <div className="flex gap-4 mb-4">
-        <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
-          <DialogTrigger asChild>
-            <Button variant="outline">Koreksi Inventory</Button>
-          </DialogTrigger>
-          <DialogContent>
-            <DialogHeader>
-              <DialogTitle>Koreksi Inventory</DialogTitle>
-            </DialogHeader>
-            <Input placeholder="Item ID" value={correctionItemId} onChange={(e) => setCorrectionItemId(e.target.value)} />
-            <Input type="number" placeholder="Quantity" value={correctionQuantity ?? ""} onChange={(e) => setCorrectionQuantity(Number(e.target.value))} />
-            <Select
-              onValueChange={(value) => {
-                console.log("Selected location:", value); // Debugging log
-                setCorrectionLocation(value as "inventory_toko" | "inventory_gudang" | "inventory_tiktok");
-              }}
-              value={correctionLocation} // No need for ?? "inventory_toko" since we set a default in useState
-            >
-              <SelectTrigger className="w-full"><SelectValue placeholder="Pilih Lokasi" /></SelectTrigger>
-              <SelectContent>
-                <SelectItem value="inventory_toko">Toko</SelectItem>
-                <SelectItem value="inventory_gudang">Gudang</SelectItem>
-                <SelectItem value="inventory_tiktok">TikTok</SelectItem>
-              </SelectContent>
-            </Select>
-            {errorMessage && <div className="text-red-500">{errorMessage}</div>}
-            <Button onClick={handleOpenConfirmDialog} className="w-full mt-4">Simpan Perubahan</Button>
-          </DialogContent>
-        </Dialog>
+    <div className="p-6 space-y-6">
+      {/* Header Section */}
+      <div className="flex justify-between items-center">
+        <h1 className="text-2xl font-bold text-gray-900">Dashboard</h1>
+        <div className="flex gap-4">
+          <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
+            <DialogTrigger asChild>
+              <Button variant="outline" className="flex items-center gap-2">
+                <span>Koreksi Inventory</span>
+              </Button>
+            </DialogTrigger>
+            <DialogContent className="sm:max-w-[425px]">
+              <DialogHeader>
+                <DialogTitle className="text-xl font-semibold">Koreksi Inventory</DialogTitle>
+              </DialogHeader>
+              <div className="space-y-4 py-4">
+                <div className="space-y-2">
+                  <label className="text-sm font-medium">Item ID</label>
+                  <Input placeholder="Masukkan Item ID" value={correctionItemId} onChange={(e) => setCorrectionItemId(e.target.value)} />
+                </div>
+                <div className="space-y-2">
+                  <label className="text-sm font-medium">Quantity</label>
+                  <Input type="number" placeholder="Masukkan Quantity" value={correctionQuantity ?? ""} onChange={(e) => setCorrectionQuantity(Number(e.target.value))} />
+                </div>
+                <div className="space-y-2">
+                  <label className="text-sm font-medium">Lokasi</label>
+                  <Select
+                    onValueChange={(value) => setCorrectionLocation(value as "inventory_toko" | "inventory_gudang" | "inventory_tiktok")}
+                    value={correctionLocation}
+                  >
+                    <SelectTrigger>
+                      <SelectValue placeholder="Pilih Lokasi" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="inventory_toko">Toko</SelectItem>
+                      <SelectItem value="inventory_gudang">Gudang</SelectItem>
+                      <SelectItem value="inventory_tiktok">TikTok</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+                {errorMessage && <div className="text-red-500 text-sm">{errorMessage}</div>}
+              </div>
+              <DialogFooter>
+                <Button variant="outline" onClick={() => setIsDialogOpen(false)}>Batal</Button>
+                <Button onClick={handleOpenConfirmDialog}>Simpan Perubahan</Button>
+              </DialogFooter>
+            </DialogContent>
+          </Dialog>
 
-        <Dialog open={isPriceDialogOpen} onOpenChange={setIsPriceDialogOpen}>
-          <DialogTrigger asChild>
-            <Button variant="outline">Koreksi Harga</Button>
-          </DialogTrigger>
-          <DialogContent>
-            <DialogHeader>
-              <DialogTitle>Koreksi Harga</DialogTitle>
-            </DialogHeader>
-            <Input placeholder="Item ID" value={priceItemId} onChange={(e) => setPriceItemId(e.target.value)} />
-            <Input type="number" placeholder="Harga Baru" value={newPrice ?? ""} onChange={(e) => setNewPrice(Number(e.target.value))} />
-            {errorMessage && <div className="text-red-500">{errorMessage}</div>}
-            <Button onClick={() => setIsPriceConfirmDialogOpen(true)} className="w-full mt-4">Simpan Perubahan</Button>
-          </DialogContent>
-        </Dialog>
+          <Dialog open={isPriceDialogOpen} onOpenChange={setIsPriceDialogOpen}>
+            <DialogTrigger asChild>
+              <Button variant="outline" className="flex items-center gap-2">
+                <span>Koreksi Harga</span>
+              </Button>
+            </DialogTrigger>
+            <DialogContent className="sm:max-w-[425px]">
+              <DialogHeader>
+                <DialogTitle className="text-xl font-semibold">Koreksi Harga</DialogTitle>
+              </DialogHeader>
+              <div className="space-y-4 py-4">
+                <div className="space-y-2">
+                  <label className="text-sm font-medium">Item ID</label>
+                  <Input placeholder="Masukkan Item ID" value={priceItemId} onChange={(e) => setPriceItemId(e.target.value)} />
+                </div>
+                <div className="space-y-2">
+                  <label className="text-sm font-medium">Harga Baru</label>
+                  <Input type="number" placeholder="Masukkan Harga Baru" value={newPrice ?? ""} onChange={(e) => setNewPrice(Number(e.target.value))} />
+                </div>
+                {errorMessage && <div className="text-red-500 text-sm">{errorMessage}</div>}
+              </div>
+              <DialogFooter>
+                <Button variant="outline" onClick={() => setIsPriceDialogOpen(false)}>Batal</Button>
+                <Button onClick={() => setIsPriceConfirmDialogOpen(true)}>Simpan Perubahan</Button>
+              </DialogFooter>
+            </DialogContent>
+          </Dialog>
+        </div>
       </div>
-      {/* Dropdown Selector */}
-      <div className="flex justify-between items-center mb-4">
-        <Select onValueChange={(value) => setInventoryType(value as "toko" | "gudang" | "tiktok" | "rusak" )} value={inventoryType}>
+
+      {/* Filters Section */}
+      <div className="flex justify-between items-center gap-4 bg-white p-4 rounded-lg shadow-sm">
+        <Select onValueChange={(value) => setInventoryType(value as "toko" | "gudang" | "tiktok" | "rusak")} value={inventoryType}>
           <SelectTrigger className="w-[200px]">
-            <SelectValue placeholder="Select Inventory" />
+            <SelectValue placeholder="Pilih Inventory" />
           </SelectTrigger>
           <SelectContent>
             <SelectItem value="toko">Toko</SelectItem>
@@ -234,85 +266,108 @@ const DashboardContent = () => {
           </SelectContent>
         </Select>
 
-        {/* Search Input */}
         <Input
-          placeholder="Cari pakai ID Barang ato Deskripsi..."
+          placeholder="Cari dengan ID Barang atau Deskripsi..."
           value={searchQuery}
           onChange={(e) => setSearchQuery(e.target.value)}
-          className="w-[300px]"
+          className="max-w-md"
         />
       </div>
 
-      {/* Confirmation Dialog */}
-      <Dialog open={isConfirmDialogOpen} onOpenChange={setIsConfirmDialogOpen}>
-        <DialogContent>
-          <DialogHeader>
-            <DialogTitle>Konfirmasi Perubahan</DialogTitle>
-          </DialogHeader>
-          <p>Apakah Anda yakin ingin mengubah inventory dengan data berikut?</p>
-          <ul className="list-disc ml-6 text-sm text-gray-700">
-            <li><strong>Item ID:</strong> {correctionItemId}</li>
-            <li><strong>Quantity:</strong> {correctionQuantity}</li>
-            <li><strong>Lokasi:</strong> {correctionLocation}</li>
-          </ul>
-          <DialogFooter>
-            <Button variant="outline" onClick={() => setIsConfirmDialogOpen(false)}>Batal</Button>
-            <Button className="bg-blue-600 text-white" onClick={handleCorrectionSubmit}>Konfirmasi</Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
-
-      {/* Confirmation Dialog */}
-      <Dialog open={isPriceConfirmDialogOpen} onOpenChange={setIsPriceConfirmDialogOpen}>
-        <DialogContent>
-          <DialogHeader>
-            <DialogTitle>Konfirmasi Perubahan Harga</DialogTitle>
-          </DialogHeader>
-          <p>Apakah Anda yakin ingin mengubah harga barang ini?</p>
-          <ul className="list-disc ml-6 text-sm text-gray-700">
-            <li><strong>Item ID:</strong> {priceItemId}</li>
-            <li><strong>Harga Baru:</strong> Rp.{newPrice?.toLocaleString("id-ID")}</li>
-          </ul>
-          <DialogFooter>
-            <Button variant="outline" onClick={() => setIsPriceConfirmDialogOpen(false)}>Batal</Button>
-            <Button className="bg-blue-600 text-white" onClick={handlePriceConfirmSubmit}>Konfirmasi</Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
-
       {/* Inventory Table */}
-      <Card>
-        <CardHeader>
-          <CardTitle>Inventory - {inventoryType.charAt(0).toUpperCase() + inventoryType.slice(1)}</CardTitle>
-          <div className="text-lg font-bold text-black-600">
-            Grand Total: Rp.{computeGrandTotal().toLocaleString("id-ID")}
+      <Card className="shadow-lg">
+        <CardHeader className="bg-gray-50 border-b">
+          <div className="flex justify-between items-center">
+            <CardTitle className="text-xl font-semibold">
+              Inventory - {inventoryType.charAt(0).toUpperCase() + inventoryType.slice(1)}
+            </CardTitle>
+            <div className="text-lg font-bold text-blue-600">
+              Total: Rp.{computeGrandTotal().toLocaleString("id-ID")}
+            </div>
           </div>
         </CardHeader>
-        <CardContent>
-          <Table>
-            <TableHeader>
-              <TableRow>
-                <TableHead>ID Barang</TableHead>
-                <TableHead>Deskripsi</TableHead>
-                <TableHead>Quantity</TableHead>
-                <TableHead>Harga Satuan</TableHead>
-                <TableHead>Total Harga</TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {filteredInventory.map((item) => (
-                <TableRow key={item.item_id}>
-                  <TableCell>{item.item_id}</TableCell>
-                  <TableCell>{item.description}</TableCell>
-                  <TableCell>{item.quantity}</TableCell>
-                  <TableCell>Rp.{item.price.toLocaleString("id-ID")}</TableCell>
-                  <TableCell>Rp.{computeTotalValue(item).toLocaleString("id-ID")}</TableCell>
+        <CardContent className="p-0">
+          <div className="overflow-x-auto">
+            <Table>
+              <TableHeader>
+                <TableRow className="bg-gray-50">
+                  <TableHead className="font-semibold">ID Barang</TableHead>
+                  <TableHead className="font-semibold">Deskripsi</TableHead>
+                  <TableHead className="font-semibold text-right">Quantity</TableHead>
+                  <TableHead className="font-semibold text-right">Harga Satuan</TableHead>
+                  <TableHead className="font-semibold text-right">Total Harga</TableHead>
                 </TableRow>
-              ))}
-            </TableBody>
-          </Table>
+              </TableHeader>
+              <TableBody>
+                {filteredInventory.map((item) => (
+                  <TableRow key={item.item_id} className="hover:bg-gray-50">
+                    <TableCell className="font-medium">{item.item_id}</TableCell>
+                    <TableCell>{item.description}</TableCell>
+                    <TableCell className="text-right">{item.quantity}</TableCell>
+                    <TableCell className="text-right">Rp.{item.price.toLocaleString("id-ID")}</TableCell>
+                    <TableCell className="text-right font-medium">Rp.{computeTotalValue(item).toLocaleString("id-ID")}</TableCell>
+                  </TableRow>
+                ))}
+              </TableBody>
+            </Table>
+          </div>
         </CardContent>
       </Card>
+
+      {/* Confirmation Dialogs */}
+      <Dialog open={isConfirmDialogOpen} onOpenChange={setIsConfirmDialogOpen}>
+        <DialogContent className="sm:max-w-[425px]">
+          <DialogHeader>
+            <DialogTitle className="text-xl font-semibold">Konfirmasi Perubahan</DialogTitle>
+          </DialogHeader>
+          <div className="space-y-4 py-4">
+            <p className="text-gray-600">Apakah Anda yakin ingin mengubah inventory dengan data berikut?</p>
+            <div className="space-y-2 text-sm">
+              <div className="flex justify-between">
+                <span className="font-medium">Item ID:</span>
+                <span>{correctionItemId}</span>
+              </div>
+              <div className="flex justify-between">
+                <span className="font-medium">Quantity:</span>
+                <span>{correctionQuantity}</span>
+              </div>
+              <div className="flex justify-between">
+                <span className="font-medium">Lokasi:</span>
+                <span>{correctionLocation}</span>
+              </div>
+            </div>
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setIsConfirmDialogOpen(false)}>Batal</Button>
+            <Button onClick={handleCorrectionSubmit}>Konfirmasi</Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      <Dialog open={isPriceConfirmDialogOpen} onOpenChange={setIsPriceConfirmDialogOpen}>
+        <DialogContent className="sm:max-w-[425px]">
+          <DialogHeader>
+            <DialogTitle className="text-xl font-semibold">Konfirmasi Perubahan Harga</DialogTitle>
+          </DialogHeader>
+          <div className="space-y-4 py-4">
+            <p className="text-gray-600">Apakah Anda yakin ingin mengubah harga barang ini?</p>
+            <div className="space-y-2 text-sm">
+              <div className="flex justify-between">
+                <span className="font-medium">Item ID:</span>
+                <span>{priceItemId}</span>
+              </div>
+              <div className="flex justify-between">
+                <span className="font-medium">Harga Baru:</span>
+                <span>Rp.{newPrice?.toLocaleString("id-ID")}</span>
+              </div>
+            </div>
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setIsPriceConfirmDialogOpen(false)}>Batal</Button>
+            <Button onClick={handlePriceConfirmSubmit}>Konfirmasi</Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 };

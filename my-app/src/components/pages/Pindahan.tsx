@@ -16,6 +16,7 @@ import { Button } from "@/components/ui/button";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
 import { AiOutlinePlus, AiOutlineMinus } from "react-icons/ai";
+import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
 
 export type TransferData = {
   item_id: string;
@@ -110,109 +111,169 @@ export default function PindahanContent() {
   };
 
   return (
-    <div className="w-full max-w-5xl mx-auto mt-10 p-6 bg-white shadow-md rounded-lg">
-      <h2 className="text-2xl font-semibold text-center mb-4">Pindahan Inventory</h2>
+    <div className="p-6 space-y-6">
+      {/* Header Section */}
+      <div className="flex justify-between items-center">
+        <h1 className="text-2xl font-bold text-gray-900">Pindahan Inventory</h1>
+      </div>
 
+      {/* Message Display */}
       {message && (
-        <div className={`text-center mb-4 ${message.startsWith("✅") ? "text-green-600" : "text-red-600"}`}>
+        <div className={`p-4 rounded-lg ${
+          message.startsWith("✅") 
+            ? "bg-green-50 border border-green-200 text-green-700" 
+            : "bg-red-50 border border-red-200 text-red-700"
+        }`}>
           {message}
         </div>
       )}
 
-      {/* 🔹 Source and Destination Dropdowns (Side by Side) */}
-      <div className="grid grid-cols-2 gap-4 mb-4">
-        <div>
-          <label className="block text-sm font-medium">Dari</label>
-          <Select onValueChange={setSource}>
-            <SelectTrigger className="w-full mt-1">
-              <SelectValue placeholder="Pilih Sumber" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectGroup>
-                <SelectLabel>Inventories</SelectLabel>
-                <SelectItem value="gudang">Gudang</SelectItem>
-                <SelectItem value="toko">Toko</SelectItem>
-                <SelectItem value="tiktok">TikTok</SelectItem>
-              </SelectGroup>
-            </SelectContent>
-          </Select>
-        </div>
-        <div>
-          <label className="block text-sm font-medium">Ke</label>
-          <Select onValueChange={setDestination}>
-            <SelectTrigger className="w-full mt-1">
-              <SelectValue placeholder="Pilih Destinasi" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectGroup>
-                <SelectLabel>Inventories</SelectLabel>
-                <SelectItem value="gudang">Gudang</SelectItem>
-                <SelectItem value="toko">Toko</SelectItem>
-                <SelectItem value="tiktok">TikTok</SelectItem>
-              </SelectGroup>
-            </SelectContent>
-          </Select>
-        </div>
-      </div>
+      {/* Transfer Form */}
+      <Card className="shadow-lg">
+        <CardHeader className="bg-gray-50 border-b">
+          <CardTitle className="text-xl font-semibold">Form Pindahan</CardTitle>
+        </CardHeader>
+        <CardContent className="p-6">
+          {/* Source and Destination Selection */}
+          <div className="grid grid-cols-2 gap-6 mb-6">
+            <div className="space-y-2">
+              <label className="text-sm font-medium text-gray-700">Dari</label>
+              <Select onValueChange={setSource} value={source}>
+                <SelectTrigger className="w-full">
+                  <SelectValue placeholder="Pilih Sumber" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectGroup>
+                    <SelectLabel>Inventories</SelectLabel>
+                    <SelectItem value="gudang">Gudang</SelectItem>
+                    <SelectItem value="toko">Toko</SelectItem>
+                    <SelectItem value="tiktok">TikTok</SelectItem>
+                  </SelectGroup>
+                </SelectContent>
+              </Select>
+            </div>
+            <div className="space-y-2">
+              <label className="text-sm font-medium text-gray-700">Ke</label>
+              <Select onValueChange={setDestination} value={destination}>
+                <SelectTrigger className="w-full">
+                  <SelectValue placeholder="Pilih Destinasi" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectGroup>
+                    <SelectLabel>Inventories</SelectLabel>
+                    <SelectItem value="gudang">Gudang</SelectItem>
+                    <SelectItem value="toko">Toko</SelectItem>
+                    <SelectItem value="tiktok">TikTok</SelectItem>
+                  </SelectGroup>
+                </SelectContent>
+              </Select>
+            </div>
+          </div>
 
-      {/* Table for Item Input */}
-      <Table>
-        <TableHeader>
-          <TableRow>
-            <TableHead>Kode Barang</TableHead>
-            <TableHead>Quantity</TableHead>
-            <TableHead>Aksi</TableHead>
-          </TableRow>
-        </TableHeader>
-        <TableBody>
-          {items.map((item, index) => (
-            <TableRow key={index}>
-              <TableCell>
-                <Input
-                  type="text"
-                  placeholder="Kode Barang"
-                  value={item.item_id}
-                  onChange={(e) => handleInputChange(index, "item_id", e.target.value)}
-                />
-              </TableCell>
-              <TableCell>
-                <Input
-                  type="number"
-                  placeholder="Quantity"
-                  value={item.quantity}
-                  onChange={(e) => handleInputChange(index, "quantity", Number(e.target.value))}
-                />
-              </TableCell>
-              <TableCell>
-                <Button variant="destructive" onClick={() => removeRow(index)} disabled={items.length <= 1}>
-                  <AiOutlineMinus />
-                </Button>
-              </TableCell>
-            </TableRow>
-          ))}
-        </TableBody>
-      </Table>
+          {/* Items Table */}
+          <div className="space-y-4">
+            <div className="flex justify-between items-center">
+              <h3 className="text-lg font-medium text-gray-900">Daftar Barang</h3>
+              <Button 
+                variant="outline" 
+                onClick={addRow}
+                className="flex items-center gap-2"
+              >
+                <AiOutlinePlus className="w-4 h-4" />
+                <span>Tambah Barang</span>
+              </Button>
+            </div>
+            <div className="border rounded-lg overflow-hidden">
+              <Table>
+                <TableHeader>
+                  <TableRow className="bg-gray-50">
+                    <TableHead className="font-semibold">Kode Barang</TableHead>
+                    <TableHead className="font-semibold">Quantity</TableHead>
+                    <TableHead className="font-semibold w-[100px]">Aksi</TableHead>
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
+                  {items.map((item, index) => (
+                    <TableRow key={index} className="hover:bg-gray-50">
+                      <TableCell>
+                        <Input
+                          type="text"
+                          placeholder="Kode Barang"
+                          value={item.item_id}
+                          onChange={(e) => handleInputChange(index, "item_id", e.target.value)}
+                          className="w-full"
+                        />
+                      </TableCell>
+                      <TableCell>
+                        <Input
+                          type="number"
+                          placeholder="Quantity"
+                          value={item.quantity}
+                          onChange={(e) => handleInputChange(index, "quantity", Number(e.target.value))}
+                          className="w-full"
+                        />
+                      </TableCell>
+                      <TableCell>
+                        <Button 
+                          variant="destructive" 
+                          size="icon"
+                          onClick={() => removeRow(index)} 
+                          disabled={items.length <= 1}
+                          className="h-8 w-8"
+                        >
+                          <AiOutlineMinus className="h-4 w-4" />
+                        </Button>
+                      </TableCell>
+                    </TableRow>
+                  ))}
+                </TableBody>
+              </Table>
+            </div>
+          </div>
 
-      {/* Buttons at the bottom */}
-      <div className="flex justify-between mt-4">
-        <Button className="bg-gray-800 text-white px-4 py-2" onClick={handleOpenConfirm}>
-          Konfirmasi
-        </Button>
-        <Button className="bg-gray-800 text-white px-4 py-2 flex items-center gap-2" onClick={addRow}>
-          <AiOutlinePlus />
-        </Button>
-      </div>
+          {/* Action Buttons */}
+          <div className="flex justify-end mt-6">
+            <Button 
+              onClick={handleOpenConfirm}
+              className="bg-blue-600 hover:bg-blue-700 text-white"
+            >
+              Konfirmasi Pindahan
+            </Button>
+          </div>
+        </CardContent>
+      </Card>
 
-      {/* Confirmation Modal */}
+      {/* Confirmation Dialog */}
       <Dialog open={isConfirmOpen} onOpenChange={setIsConfirmOpen}>
-        <DialogContent>
+        <DialogContent className="sm:max-w-[425px]">
           <DialogHeader>
-            <DialogTitle>Konfirmasi Pindahan</DialogTitle>
+            <DialogTitle className="text-xl font-semibold">Konfirmasi Pindahan</DialogTitle>
           </DialogHeader>
-          <p>Anda yakin ingin memindahkan barang ke lokasi baru?</p>
+          <div className="space-y-4 py-4">
+            <p className="text-gray-600">Apakah Anda yakin ingin memindahkan barang dengan detail berikut?</p>
+            <div className="space-y-2 text-sm">
+              <div className="flex justify-between">
+                <span className="font-medium">Dari:</span>
+                <span className="capitalize">{source}</span>
+              </div>
+              <div className="flex justify-between">
+                <span className="font-medium">Ke:</span>
+                <span className="capitalize">{destination}</span>
+              </div>
+              <div className="flex justify-between">
+                <span className="font-medium">Jumlah Barang:</span>
+                <span>{items.length}</span>
+              </div>
+            </div>
+          </div>
           <DialogFooter>
-            <Button variant="outline" onClick={() => setIsConfirmOpen(false)}>Cancel</Button>
-            <Button className="bg-blue-600 text-white" onClick={handleConfirmTransfer}>Konfirmasi</Button>
+            <Button variant="outline" onClick={() => setIsConfirmOpen(false)}>Batal</Button>
+            <Button 
+              onClick={handleConfirmTransfer}
+              className="bg-blue-600 hover:bg-blue-700 text-white"
+            >
+              Konfirmasi
+            </Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>

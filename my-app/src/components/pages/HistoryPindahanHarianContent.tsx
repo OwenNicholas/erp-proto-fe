@@ -52,71 +52,77 @@ export default function HistoryPindahanHarianContent() {
   }, {});
 
   return (
-    <div className="flex flex-col justify-center items-center min-h-[85vh] mt-[-40px]">
-      <div className="w-full max-w-4xl"> {/* 🔹 Match size with Bulanan */}
-        <Card className="shadow-md rounded-lg border border-gray-300">
-          <CardHeader className="text-center py-4">
-            <CardTitle className="text-xl font-semibold">History Pindahan Harian</CardTitle>
-          </CardHeader>
-          <CardContent className="p-4">
-            {/* 🔹 Date Picker */}
-            <div className="flex justify-center mb-4">
-              <Popover>
-                <PopoverTrigger asChild>
-                  <Button variant="outline" className="flex items-center gap-2">
-                    <CalendarIcon className="w-4 h-4" />
-                    {format(selectedDate, "dd/MM/yyyy")}
-                  </Button>
-                </PopoverTrigger>
-                <PopoverContent align="end">
-                  <Calendar 
-                    mode="single" 
-                    selected={selectedDate} 
-                    onSelect={(date) => date && setSelectedDate(date)} 
-                    className="w-auto"
-                  />
-                </PopoverContent>
-              </Popover>
-            </div>
+    <div className="p-6 space-y-6">
+      {/* Header Section */}
+      <div className="flex justify-between items-center">
+        <h1 className="text-2xl font-bold text-gray-900">History Pindahan Harian</h1>
+        <Popover>
+          <PopoverTrigger asChild>
+            <Button variant="outline" className="flex items-center gap-2">
+              <CalendarIcon className="w-4 h-4" />
+              {format(selectedDate, "dd/MM/yyyy")}
+            </Button>
+          </PopoverTrigger>
+          <PopoverContent align="end">
+            <Calendar 
+              mode="single" 
+              selected={selectedDate} 
+              onSelect={(date) => date && setSelectedDate(date)} 
+              className="w-auto"
+            />
+          </PopoverContent>
+        </Popover>
+      </div>
 
-            {loading ? (
-              <div className="text-center text-gray-500 text-lg">Loading...</div>
-            ) : error ? (
-              <div className="text-center text-red-500 text-lg">{error}</div>
-            ) : Object.keys(groupedHistory).length === 0 ? (
-              <div className="text-center text-gray-500 text-lg font-semibold py-4">
-                ❌ No history records found.
-              </div>
-            ) : (
-              Object.entries(groupedHistory).map(([groupId, entries]) => (
-                <Card key={groupId} className="mb-4 shadow-md rounded-lg border border-gray-200">
-                  <CardHeader>
-                    <CardTitle className="text-md font-semibold">
+      {/* History Section */}
+      <Card className="shadow-lg">
+        <CardHeader className="bg-gray-50 border-b">
+          <CardTitle className="text-xl font-semibold">Ringkasan Pindahan Harian</CardTitle>
+        </CardHeader>
+        <CardContent className="p-6">
+          {loading ? (
+            <div className="text-center py-8">
+              <p className="text-gray-500 text-lg font-medium">Loading...</p>
+            </div>
+          ) : error ? (
+            <div className="text-center py-8">
+              <p className="text-red-500 text-lg font-medium">{error}</p>
+            </div>
+          ) : Object.keys(groupedHistory).length === 0 ? (
+            <div className="text-center py-8">
+              <p className="text-gray-500 text-lg font-medium">Tidak ada data history yang tersedia.</p>
+            </div>
+          ) : (
+            <div className="space-y-6">
+              {Object.entries(groupedHistory).map(([groupId, entries]) => (
+                <Card key={groupId} className="shadow-sm">
+                  <CardHeader className="bg-gray-50 border-b">
+                    <CardTitle className="text-lg font-semibold">
                       Group ID: <span className="font-mono">{groupId}</span>
                     </CardTitle>
                   </CardHeader>
-                  <CardContent className="p-2">
+                  <CardContent className="p-4">
                     <div className="overflow-x-auto">
-                      <Table className="w-full text-md">
+                      <Table>
                         <TableHeader>
-                          <TableRow className="bg-gray-100">
-                            <TableHead className="px-4 py-2">No.</TableHead>
-                            <TableHead className="px-4 py-2">No. Barang</TableHead>
-                            <TableHead className="px-4 py-2 text-right">Quantity</TableHead>
-                            <TableHead className="px-4 py-2">Sumber</TableHead>
-                            <TableHead className="px-4 py-2">Destinasi</TableHead>
-                            <TableHead className="px-4 py-2 text-right">Waktu</TableHead>
+                          <TableRow className="bg-gray-50">
+                            <TableHead className="font-semibold">No.</TableHead>
+                            <TableHead className="font-semibold">ID Barang</TableHead>
+                            <TableHead className="font-semibold text-right">Quantity</TableHead>
+                            <TableHead className="font-semibold">Sumber</TableHead>
+                            <TableHead className="font-semibold">Destinasi</TableHead>
+                            <TableHead className="font-semibold text-right">Waktu</TableHead>
                           </TableRow>
                         </TableHeader>
                         <TableBody>
                           {entries.map((entry) => (
-                            <TableRow key={entry.pindahan_id} className="border-b">
-                              <TableCell className="px-4 py-2">{entry.pindahan_id}</TableCell>
-                              <TableCell className="px-4 py-2">{entry.item_id}</TableCell>
-                              <TableCell className="px-4 py-2 text-right">{entry.quantity}</TableCell>
-                              <TableCell className="px-4 py-2">{entry.source}</TableCell>
-                              <TableCell className="px-4 py-2">{entry.destination}</TableCell>
-                              <TableCell className="px-4 py-2 text-right">
+                            <TableRow key={entry.pindahan_id} className="hover:bg-gray-50">
+                              <TableCell className="font-medium">{entry.pindahan_id}</TableCell>
+                              <TableCell className="font-medium">{entry.item_id}</TableCell>
+                              <TableCell className="text-right font-medium">{entry.quantity}</TableCell>
+                              <TableCell className="font-medium">{entry.source}</TableCell>
+                              <TableCell className="font-medium">{entry.destination}</TableCell>
+                              <TableCell className="text-right font-medium">
                                 {format(parseISO(entry.timestamp), "dd/MM/yyyy HH:mm:ss")}
                               </TableCell>
                             </TableRow>
@@ -126,11 +132,11 @@ export default function HistoryPindahanHarianContent() {
                     </div>
                   </CardContent>
                 </Card>
-              ))
-            )}
-          </CardContent>
-        </Card>
-      </div>
+              ))}
+            </div>
+          )}
+        </CardContent>
+      </Card>
     </div>
   );
 }

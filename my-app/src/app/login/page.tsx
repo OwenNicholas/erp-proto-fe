@@ -31,11 +31,17 @@ export default function LoginPage() {
 
       const data = await response.json();
       
-      // Set auth token in cookie
+      // Set auth token and user info in cookies
       document.cookie = `auth-token=${data.token}; path=/`;
+      document.cookie = `username=${username}; path=/`;
+      document.cookie = `role=${data.data.role}; path=/`;
       
-      // Redirect to dashboard
-      router.push("/dashboard");
+      // Redirect based on role
+      if (data.data.role === "admin") {
+        router.push("/admin");
+      } else {
+        router.push("/dashboard");
+      }
     } catch {
       setError("Invalid username or password");
     }
