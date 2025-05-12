@@ -36,7 +36,7 @@ export default function LoginPage() {
       
       // Redirect to dashboard
       router.push("/dashboard");
-    } catch (err) {
+    } catch {
       setError("Invalid username or password");
     }
   };
