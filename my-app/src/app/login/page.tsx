@@ -17,7 +17,7 @@ export default function LoginPage() {
     setError("");
 
     try {
-      const response = await fetch("http://localhost:8080/api/verify-user", {
+      const response = await fetch("http://103.185.52.233:8080/api/verify-user", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",

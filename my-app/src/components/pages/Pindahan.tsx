@@ -90,7 +90,7 @@ export default function PindahanContent() {
       // ✅ Log the payload before sending
       console.log("🔄 Sending POST request (Transferring Items):", JSON.stringify(payload, null, 2));
 
-      const response = await fetch("http://localhost:8080/api/inventory", {
+      const response = await fetch("http://103.185.52.233:8080/api/inventory", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(payload),

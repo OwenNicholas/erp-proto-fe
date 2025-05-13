@@ -52,7 +52,7 @@ const DashboardContent = () => {
    const fetchInventory = useCallback(async () => {
     try {
       // Fetch selected inventory
-      const response = await fetch(`http://localhost:8080/api/inventory/${inventoryType}`);
+      const response = await fetch(`http://103.185.52.233:8080/api/inventory/${inventoryType}`);
       if (!response.ok) {
         throw new Error("Failed to fetch inventory");
       }
@@ -108,7 +108,7 @@ const DashboardContent = () => {
   
 
     try {
-      const response = await fetch(`http://localhost:8080/api/items/${correctionItemId}`, {
+      const response = await fetch(`http://103.185.52.233:8080/api/items/${correctionItemId}`, {
         method: "PUT",
         headers: {
           "Content-Type": "application/json",
@@ -147,7 +147,7 @@ const DashboardContent = () => {
     console.log("📤 Sending PUT request to /api/items/price with payload:", payload);
 
     try {
-      const response = await fetch(`http://localhost:8080/api/items/price`, {
+      const response = await fetch(`http://103.185.52.233:8080/api/items/price`, {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({

@@ -29,7 +29,7 @@ export default function LaporanBulananContent() {
 
   const fetchSales = async () => {
     try {
-      const response = await fetch("http://localhost:8080/api/sales");
+      const response = await fetch("http://103.185.52.233:8080/api/sales");
       if (!response.ok) throw new Error("Failed to fetch sales");
       const data = await response.json();
       setSalesData(data.data || []);
@@ -40,7 +40,7 @@ export default function LaporanBulananContent() {
 
   const fetchTransactions = async () => {
     try {
-      const response = await fetch("http://localhost:8080/api/transactions");
+      const response = await fetch("http://103.185.52.233:8080/api/transactions");
       if (!response.ok) throw new Error("Failed to fetch transactions");
       const data = await response.json();
       setTransactions(data.data || []);

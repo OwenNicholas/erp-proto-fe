@@ -29,7 +29,7 @@ export default function TerimaBarangContent() {
   // 🔹 Check if Item Exists in DB
   const checkItemExists = async (itemId: string): Promise<boolean> => {
     try {
-      const response = await fetch("http://localhost:8080/api/items");
+      const response = await fetch("http://103.185.52.233:8080/api/items");
       if (!response.ok) throw new Error("Failed to fetch items");
 
       const data = await response.json();
@@ -102,7 +102,7 @@ export default function TerimaBarangContent() {
         console.log("🔄 Sending PUT request (Updating Items):", { items: existingItems });
 
         requests.push(
-          fetch("http://localhost:8080/api/items", {
+          fetch("http://103.185.52.233:8080/api/items", {
             method: "PUT",
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify({
@@ -119,7 +119,7 @@ export default function TerimaBarangContent() {
         });
       
         requests.push(
-          fetch("http://localhost:8080/api/items", {
+          fetch("http://103.185.52.233:8080/api/items", {
             method: "POST",
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify({ items: newItems }),
