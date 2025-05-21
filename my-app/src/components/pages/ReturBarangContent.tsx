@@ -90,7 +90,7 @@ export default function ReturBarangContent() {
           items: damagedItems.map(({ item_id, quantity, sale_id }) => ({ item_id, quantity, sale_id }))
         };
         console.log(payload);
-        const responseDamaged = await fetch("http://103.185.52.233:3000/api/items/rusak", {
+        const responseDamaged = await fetch("http://103.185.52.233:8080/api/items/rusak", {
           method: "PUT",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify(payload),
@@ -109,7 +109,7 @@ export default function ReturBarangContent() {
         };
         console.log(payload);
 
-        const responseNormal = await fetch("http://103.185.52.233:3000/api/items", {
+        const responseNormal = await fetch("http://103.185.52.233:8080/api/items", {
           method: "PUT",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify( payload ),

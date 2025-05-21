@@ -65,7 +65,7 @@ export default function PenjualanContent({ location }: locations) {
   useEffect(() => {
     const fetchInventory = async () => {
       try {
-        const response = await fetch(`http://103.185.52.233:3000/api/inventory/${location}`);
+        const response = await fetch(`http://103.185.52.233:8080/api/inventory/${location}`);
         if (!response.ok) {
           throw new Error("Failed to fetch inventory");
         }
@@ -241,7 +241,7 @@ export default function PenjualanContent({ location }: locations) {
     console.log("Payload being sent:", JSON.stringify(payload, null, 2));
 
     try {
-      const response = await fetch("http://103.185.52.233:3000/api/transactions", {
+      const response = await fetch("http://103.185.52.233:8080/api/transactions", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(payload),

@@ -48,7 +48,7 @@ const DashboardContent = () => {
   const fetchInventory = useCallback(async () => {
     try {
       // Fetch selected inventory
-      const response = await fetch(`http://103.185.52.233:3000/api/inventory/${inventoryType}`);
+      const response = await fetch(`http://103.185.52.233:8080/api/inventory/${inventoryType}`);
       if (!response.ok) {
         throw new Error("Failed to fetch inventory");
       }
@@ -89,7 +89,7 @@ const DashboardContent = () => {
     setFormMessage(null);
     setFormError(null);
     try {
-      const response = await fetch("http://103.185.52.233:3000/api/items/price", {
+      const response = await fetch("http://103.185.52.233:8080/api/items/price", {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ item_id: priceItemId, price: Number(newPrice) })
@@ -111,7 +111,7 @@ const DashboardContent = () => {
     setFormMessage(null);
     setFormError(null);
     try {
-      const response = await fetch(`http://103.185.52.233:3000/api/items/${quantityItemId}`, {
+      const response = await fetch(`http://103.185.52.233:8080/api/items/${quantityItemId}`, {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ location: quantityLocation, quantity: Number(newQuantity) })

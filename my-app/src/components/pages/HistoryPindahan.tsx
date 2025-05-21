@@ -27,7 +27,7 @@ export default function HistoryPindahanContent() {
 
   const fetchHistory = async () => {
     try {
-      const response = await fetch("http://103.185.52.233:3000/api/history");
+      const response = await fetch("http://103.185.52.233:8080/api/history");
       if (!response.ok) throw new Error("Failed to fetch history data");
 
       const data = await response.json();

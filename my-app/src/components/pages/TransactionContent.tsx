@@ -73,7 +73,7 @@ export default function TransactionHistoryContent() {
   React.useEffect(() => {
     const fetchTransactionHistory = async () => {
       try {
-        const response = await fetch("http://103.185.52.233:3000/api/transactions", {
+        const response = await fetch("http://103.185.52.233:8080/api/transactions", {
           method: "GET",
           headers: {
             "Content-Type": "application/json",
@@ -238,7 +238,7 @@ export default function TransactionHistoryContent() {
     }
 
     try {
-      const response = await fetch(`http://103.185.52.233:3000/api/transactions/payment/${selectedTransactionId}`, {
+      const response = await fetch(`http://103.185.52.233:8080/api/transactions/payment/${selectedTransactionId}`, {
         method: "PUT",
         headers: {
           "Content-Type": "application/json",
@@ -256,7 +256,7 @@ export default function TransactionHistoryContent() {
       setNewPaymentStatus("");
 
       // Refresh Data
-      const updatedResponse = await fetch("http://103.185.52.233:3000/api/transactions");
+      const updatedResponse = await fetch("http://103.185.52.233:8080/api/transactions");
       const updatedResult = await updatedResponse.json();
       setData(updatedResult.data);
     } catch (error) {

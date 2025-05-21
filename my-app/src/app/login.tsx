@@ -27,7 +27,7 @@ export function LoginForm({ className, ...props }: { className?: string }) {
     setError("");
     setMessage("");
 
-    const url = "http://103.185.52.233:3000/api/verify-user";
+    const url = "http://103.185.52.233:8080/api/verify-user";
 
     try {
       const response = await fetch(url, {
