@@ -4,43 +4,32 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { format, parseISO } from "date-fns";
 import { id } from "date-fns/locale"; // Indonesian locale formatting
 
-// Define Transaction type
+// Define Transaction type based on API response
 interface Transaction {
   transaction_id: number;
+  discount_type: string;
+  discount_percent: number;
+  total_discount: number;
+  total_price: number;
+  payment_id: number;
+  customer_name: string;
   timestamp: string;
-}
-
-// Define Sale type
-interface Sale {
-  sale_id: number;
-  total: number;
-  transaction_id: number;
+  location: string;
+  payment_status: string;
+  down_payment: number;
 }
 
 export default function LaporanBulananContent() {
-  const [salesData, setSalesData] = useState<Sale[]>([]);
   const [transactions, setTransactions] = useState<Transaction[]>([]);
-  const [groupedSales, setGroupedSales] = useState<Record<string, number>>({});
+  const [groupedSales, setGroupedSales] = useState<Record<string, { total: number; discount: number }>>({});
 
   useEffect(() => {
-    fetchSales();
     fetchTransactions();
   }, []);
 
-  const fetchSales = async () => {
-    try {
-      const response = await fetch("http://103.185.52.233:8080/api/sales");
-      if (!response.ok) throw new Error("Failed to fetch sales");
-      const data = await response.json();
-      setSalesData(data.data || []);
-    } catch (error) {
-      console.error("Error fetching sales:", error);
-    }
-  };
-
   const fetchTransactions = async () => {
     try {
-      const response = await fetch("http://103.185.52.233:8080/api/transactions");
+      const response = await fetch("http://103.185.52.233:3000/api/transactions");
       if (!response.ok) throw new Error("Failed to fetch transactions");
       const data = await response.json();
       setTransactions(data.data || []);
@@ -49,32 +38,31 @@ export default function LaporanBulananContent() {
     }
   };
 
-  // ✅ Fix: Use useCallback to prevent unnecessary re-creations
   const groupSalesByMonth = useCallback(() => {
-    const grouped: Record<string, number> = {};
+    const grouped: Record<string, { total: number; discount: number }> = {};
 
-    salesData.forEach((sale) => {
-      const transaction = transactions.find((tx) => tx.transaction_id === sale.transaction_id);
-      if (!transaction || !transaction.timestamp) return;
+    transactions.forEach((transaction) => {
+      if (!transaction.timestamp) return;
 
       const saleDate = parseISO(transaction.timestamp);
       const monthYear = format(saleDate, "MMMM yyyy", { locale: id });
 
       if (!grouped[monthYear]) {
-        grouped[monthYear] = 0;
+        grouped[monthYear] = { total: 0, discount: 0};
       }
-      grouped[monthYear] += sale.total;
+      
+      grouped[monthYear].total += transaction.total_price;
+      grouped[monthYear].discount += transaction.total_discount;
     });
 
     setGroupedSales(grouped);
-  }, [salesData, transactions]); // ✅ Dependencies added properly
+  }, [transactions]);
 
-  // ✅ Fix: Include groupSalesByMonth in dependencies
   useEffect(() => {
-    if (salesData.length > 0 && transactions.length > 0) {
+    if (transactions.length > 0) {
       groupSalesByMonth();
     }
-  }, [salesData, transactions, groupSalesByMonth]); // ✅ Now includes the correct dependencies
+  }, [transactions, groupSalesByMonth]);
 
   return (
     <div className="p-6 space-y-6">
@@ -100,6 +88,7 @@ export default function LaporanBulananContent() {
                   <TableRow className="bg-gray-50">
                     <TableHead className="font-semibold">Bulan</TableHead>
                     <TableHead className="font-semibold text-right">Total Penjualan</TableHead>
+                    <TableHead className="font-semibold text-right">Total Diskon</TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>
@@ -109,11 +98,14 @@ export default function LaporanBulananContent() {
                       const dateB = new Date(b[0]);
                       return dateB.getTime() - dateA.getTime();
                     })
-                    .map(([month, total]) => (
+                    .map(([month, data]) => (
                       <TableRow key={month} className="hover:bg-gray-50">
                         <TableCell className="font-medium">{month}</TableCell>
                         <TableCell className="text-right font-medium">
-                          Rp. {total.toLocaleString("id-ID")}
+                          Rp. {data.total.toLocaleString("id-ID")}
+                        </TableCell>
+                        <TableCell className="text-right font-medium">
+                          Rp. {data.discount.toLocaleString("id-ID")}
                         </TableCell>
                       </TableRow>
                     ))}

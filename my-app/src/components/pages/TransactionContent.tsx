@@ -73,7 +73,7 @@ export default function TransactionHistoryContent() {
   React.useEffect(() => {
     const fetchTransactionHistory = async () => {
       try {
-        const response = await fetch("http://103.185.52.233:8080/api/transactions", {
+        const response = await fetch("http://103.185.52.233:3000/api/transactions", {
           method: "GET",
           headers: {
             "Content-Type": "application/json",
@@ -139,21 +139,20 @@ export default function TransactionHistoryContent() {
       header: "Total Discount",
       cell: ({ row }) => {
         const amount = parseFloat(row.getValue("total_discount"));
-        const formatted = new Intl.NumberFormat("id-ID", {
-          style: "currency",
-          currency: "IDR",
-        }).format(amount);
-        return <div className="text-right">{formatted}</div>;
+        return <div className="text-right">Rp.{amount.toLocaleString("id-ID")}</div>;
       },
     },
     {
       accessorKey: "total_price",
-      header: () => <div className="text-right">Total</div>, // Align header
-      cell: ({ row }) => (
-        <div className="text-right">
-          Rp. {row.getValue("total_price")}
-        </div>
-      ),
+      header: () => <div className="text-right">Total</div>,
+      cell: ({ row }) => {
+        const totalPrice = row.getValue("total_price") as number;
+        return (
+          <div className="text-right">
+            Rp.{totalPrice.toLocaleString("id-ID")}
+          </div>
+        );
+      },
     },
     {
       accessorKey: "payment_id",
@@ -173,7 +172,7 @@ export default function TransactionHistoryContent() {
         
         return (
           <div className="text-right">
-            Rp. {paymentId === 7 ? downPayment : totalPrice}
+            Rp.{paymentId === 7 ? downPayment.toLocaleString("id-ID") : totalPrice.toLocaleString("id-ID")}
           </div>
         );
       },
@@ -188,9 +187,9 @@ export default function TransactionHistoryContent() {
         
         if (paymentId === 7) {
           const sisa = total - down;
-          return <div className="text-right">Rp. {sisa.toLocaleString("id-ID")}</div>;
+          return <div className="text-right">Rp.{sisa.toLocaleString("id-ID")}</div>;
         }
-        return <div className="text-right">Rp. 0</div>;
+        return <div className="text-right">Rp.0</div>;
       },
     },
     {
@@ -239,7 +238,7 @@ export default function TransactionHistoryContent() {
     }
 
     try {
-      const response = await fetch(`http://103.185.52.233:8080/api/transactions/payment/${selectedTransactionId}`, {
+      const response = await fetch(`http://103.185.52.233:3000/api/transactions/payment/${selectedTransactionId}`, {
         method: "PUT",
         headers: {
           "Content-Type": "application/json",
@@ -257,7 +256,7 @@ export default function TransactionHistoryContent() {
       setNewPaymentStatus("");
 
       // Refresh Data
-      const updatedResponse = await fetch("http://103.185.52.233:8080/api/transactions");
+      const updatedResponse = await fetch("http://103.185.52.233:3000/api/transactions");
       const updatedResult = await updatedResponse.json();
       setData(updatedResult.data);
     } catch (error) {
@@ -374,7 +373,10 @@ export default function TransactionHistoryContent() {
               {table.getHeaderGroups().map((headerGroup) => (
                 <TableRow key={headerGroup.id} className="bg-gray-50">
                   {headerGroup.headers.map((header) => (
-                    <TableHead key={header.id} className="font-semibold">
+                    <TableHead
+                      key={header.id}
+                      className="font-semibold px-6 py-3 text-sm text-gray-700"
+                    >
                       {header.isPlaceholder
                         ? null
                         : flexRender(header.column.columnDef.header, header.getContext())}
@@ -386,9 +388,16 @@ export default function TransactionHistoryContent() {
             <TableBody>
               {table.getRowModel().rows?.length ? (
                 table.getRowModel().rows.map((row) => (
-                  <TableRow key={row.id} data-state={row.getIsSelected() && "selected"} className="hover:bg-gray-50">
+                  <TableRow
+                    key={row.id}
+                    data-state={row.getIsSelected() && "selected"}
+                    className="hover:bg-gray-100 transition-colors"
+                  >
                     {row.getVisibleCells().map((cell) => (
-                      <TableCell key={cell.id} className="text-center">
+                      <TableCell
+                        key={cell.id}
+                        className="px-6 py-3 text-sm align-middle"
+                      >
                         {flexRender(cell.column.columnDef.cell, cell.getContext())}
                       </TableCell>
                     ))}

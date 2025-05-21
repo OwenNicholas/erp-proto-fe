@@ -90,7 +90,7 @@ export default function PindahanContent() {
       // ✅ Log the payload before sending
       console.log("🔄 Sending POST request (Transferring Items):", JSON.stringify(payload, null, 2));
 
-      const response = await fetch("http://103.185.52.233:8080/api/inventory", {
+      const response = await fetch("http://103.185.52.233:3000/api/inventory", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(payload),
@@ -148,6 +148,7 @@ export default function PindahanContent() {
                     <SelectItem value="gudang">Gudang</SelectItem>
                     <SelectItem value="toko">Toko</SelectItem>
                     <SelectItem value="tiktok">TikTok</SelectItem>
+                    <SelectItem value="rusak">Rusak</SelectItem>
                   </SelectGroup>
                 </SelectContent>
               </Select>
@@ -164,6 +165,7 @@ export default function PindahanContent() {
                     <SelectItem value="gudang">Gudang</SelectItem>
                     <SelectItem value="toko">Toko</SelectItem>
                     <SelectItem value="tiktok">TikTok</SelectItem>
+                    <SelectItem value="rusak">Rusak</SelectItem>
                   </SelectGroup>
                 </SelectContent>
               </Select>

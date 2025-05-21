@@ -55,7 +55,7 @@ export default function TelusuriItemContent() {
   React.useEffect(() => {
     const fetchSalesData = async () => {
       try {
-        const response = await fetch("http://103.185.52.233:8080/api/sales", {
+        const response = await fetch("http://103.185.52.233:3000/api/sales", {
           method: "GET",
           headers: {
             "Content-Type": "application/json",
@@ -81,7 +81,7 @@ export default function TelusuriItemContent() {
   React.useEffect(() => {
     const fetchTotalDiscounts = async () => {
       try {
-        const response = await fetch("http://103.185.52.233:8080/api/transactions/discount_percent"); // Fetch all discounts at once
+        const response = await fetch("http://103.185.52.233:3000/api/transactions/discount_percent"); // Fetch all discounts at once
         if (!response.ok) {
           throw new Error(`Failed to fetch discounts. Status: ${response.status}`);
         }
@@ -193,7 +193,7 @@ export default function TelusuriItemContent() {
     },
     {
       accessorKey: "discount_per_item",
-      header: "Discount (Rp)",
+      header: "Discount Per Pc (Rp)",
       cell: ({ row }) => <div className="text-center">{row.getValue("discount_per_item")}</div>,
     },
     {

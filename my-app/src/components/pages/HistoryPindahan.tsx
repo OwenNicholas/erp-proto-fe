@@ -13,6 +13,7 @@ interface HistoryEntry {
   timestamp: string;
   source: string;
   destination: string;
+  price?: number;
 }
 
 export default function HistoryPindahanContent() {
@@ -26,7 +27,7 @@ export default function HistoryPindahanContent() {
 
   const fetchHistory = async () => {
     try {
-      const response = await fetch("http://103.185.52.233:8080/api/history");
+      const response = await fetch("http://103.185.52.233:3000/api/history");
       if (!response.ok) throw new Error("Failed to fetch history data");
 
       const data = await response.json();
@@ -73,43 +74,52 @@ export default function HistoryPindahanContent() {
             <div className="space-y-6">
               {Object.entries(groupedHistory)
                 .sort((a, b) => new Date(b[1][0].timestamp).getTime() - new Date(a[1][0].timestamp).getTime())
-                .map(([monthYear, entries]) => (
-                  <Card key={monthYear} className="shadow-sm">
-                    <CardHeader className="bg-gray-50 border-b">
-                      <CardTitle className="text-lg font-semibold">{monthYear}</CardTitle>
-                    </CardHeader>
-                    <CardContent className="p-4">
-                      <div className="overflow-x-auto">
-                        <Table>
-                          <TableHeader>
-                            <TableRow className="bg-gray-50">
-                              <TableHead className="font-semibold">No.</TableHead>
-                              <TableHead className="font-semibold">ID Barang</TableHead>
-                              <TableHead className="font-semibold text-right">Quantity</TableHead>
-                              <TableHead className="font-semibold">Sumber</TableHead>
-                              <TableHead className="font-semibold">Destinasi</TableHead>
-                              <TableHead className="font-semibold text-right">Waktu</TableHead>
-                            </TableRow>
-                          </TableHeader>
-                          <TableBody>
-                            {entries.map((entry) => (
-                              <TableRow key={entry.pindahan_id} className="hover:bg-gray-50">
-                                <TableCell className="font-medium">{entry.pindahan_id}</TableCell>
-                                <TableCell className="font-medium">{entry.item_id}</TableCell>
-                                <TableCell className="text-right font-medium">{entry.quantity}</TableCell>
-                                <TableCell className="font-medium">{entry.source}</TableCell>
-                                <TableCell className="font-medium">{entry.destination}</TableCell>
-                                <TableCell className="text-right font-medium">
-                                  {format(parseISO(entry.timestamp), "dd/MM/yyyy HH:mm:ss")}
-                                </TableCell>
+                .map(([monthYear, entries]) => {
+                  // Calculate total quantity and total amount for the group
+                  const totalQuantity = entries.reduce((sum, entry) => sum + entry.quantity, 0);
+                  // If price is available in entry, calculate total amount, else skip
+                  const totalAmount = entries.reduce((sum, entry) => sum + (entry.quantity * (entry.price || 0)), 0);
+                  return (
+                    <Card key={monthYear} className="shadow-sm">
+                      <CardHeader className="bg-gray-50 border-b">
+                        <CardTitle className="text-lg font-semibold flex flex-col md:flex-row md:items-center md:justify-between gap-2">
+                          <span>{monthYear}</span>
+                          <span className="text-sm font-normal text-gray-600">Total Quantity: {totalQuantity}{totalAmount > 0 ? ` | Total Amount: Rp.${totalAmount.toLocaleString("id-ID")}` : ""}</span>
+                        </CardTitle>
+                      </CardHeader>
+                      <CardContent className="p-4">
+                        <div className="overflow-x-auto">
+                          <Table>
+                            <TableHeader>
+                              <TableRow className="bg-gray-50">
+                                <TableHead className="font-semibold">No.</TableHead>
+                                <TableHead className="font-semibold">ID Barang</TableHead>
+                                <TableHead className="font-semibold text-right">Quantity</TableHead>
+                                <TableHead className="font-semibold">Sumber</TableHead>
+                                <TableHead className="font-semibold">Destinasi</TableHead>
+                                <TableHead className="font-semibold text-right">Waktu</TableHead>
                               </TableRow>
-                            ))}
-                          </TableBody>
-                        </Table>
-                      </div>
-                    </CardContent>
-                  </Card>
-                ))}
+                            </TableHeader>
+                            <TableBody>
+                              {entries.map((entry) => (
+                                <TableRow key={entry.pindahan_id} className="hover:bg-gray-50">
+                                  <TableCell className="font-medium">{entry.pindahan_id}</TableCell>
+                                  <TableCell className="font-medium">{entry.item_id}</TableCell>
+                                  <TableCell className="text-right font-medium">{entry.quantity}</TableCell>
+                                  <TableCell className="font-medium">{entry.source}</TableCell>
+                                  <TableCell className="font-medium">{entry.destination}</TableCell>
+                                  <TableCell className="text-right font-medium">
+                                    {format(parseISO(entry.timestamp), "dd/MM/yyyy HH:mm:ss")}
+                                  </TableCell>
+                                </TableRow>
+                              ))}
+                            </TableBody>
+                          </Table>
+                        </div>
+                      </CardContent>
+                    </Card>
+                  );
+                })}
             </div>
           )}
         </CardContent>

@@ -30,66 +30,38 @@ interface Transaction {
   timestamp: string; // Ensure timestamp is included as a string
   location: string;
   payment_status: string;
+  total_price: number;
 }
 
-// Define the Sale type
-interface Sale {
-  sale_id: number;
-  item_id: string;
-  description: string;
-  quantity: number;
-  price: number;
-  total: number;
-  discount_per_item: number;
-  quantity_retur: number;
-  transaction_id: number;
-  location: string;
-}
-
-// Type for grouped sales
-type SaleGroup = Record<string, { customer: string; amount: number }[]>;
+// Type for grouped transactions
+type TransactionGroup = Record<string, { customer: string; amount: number }[]>;
 
 export default function LaporanHarian() {
   const [selectedDate, setSelectedDate] = useState<Date>(new Date());
   const [transactions, setTransactions] = useState<Transaction[]>([]);
   const [filteredTransactions, setFilteredTransactions] = useState<Transaction[]>([]);
-  const [salesData, setSalesData] = useState<Sale[]>([]);
 
   useEffect(() => {
-    fetchSales();
     fetchTransactions();
   }, []);
 
   // Filter transactions based on the selected date
   const filterTransactionsByDate = useCallback(() => {
     const formattedSelectedDate = format(selectedDate, "yyyy-MM-dd");
-
     const filtered = transactions.filter((transaction) => {
       const transactionDate = format(parseISO(transaction.timestamp), "yyyy-MM-dd");
       return transactionDate === formattedSelectedDate;
     });
-
     setFilteredTransactions(filtered);
-  }, [selectedDate, transactions]); // ✅ Proper dependencies
+  }, [selectedDate, transactions]);
 
   useEffect(() => {
     filterTransactionsByDate();
   }, [selectedDate, transactions, filterTransactionsByDate]);
 
-  const fetchSales = async () => {
-    try {
-      const response = await fetch("http://103.185.52.233:8080/api/sales");
-      if (!response.ok) throw new Error("Failed to fetch sales");
-      const data = await response.json();
-      setSalesData(data.data || []);
-    } catch (error) {
-      console.error("Error fetching sales:", error);
-    }
-  };
-
   const fetchTransactions = async () => {
     try {
-      const response = await fetch("http://103.185.52.233:8080/api/transactions");
+      const response = await fetch("http://103.185.52.233:3000/api/transactions");
       if (!response.ok) throw new Error("Failed to fetch transactions");
       const data = await response.json();
       setTransactions(data.data || []);
@@ -98,41 +70,26 @@ export default function LaporanHarian() {
     }
   };
 
-  // Group transactions by payment method and consolidate customers
-const getSalesByPaymentMethod = (): SaleGroup => {
-  const groupedSales: SaleGroup = {};
-
-  filteredTransactions.forEach((transaction) => {
-    const method = paymentMethodsMap[transaction.payment_id] || "Unknown";
-    if (!groupedSales[method]) groupedSales[method] = [];
-
-    // Find corresponding sales for this transaction
-    const relatedSales = salesData.filter((sale) => sale.transaction_id === transaction.transaction_id);
-
-    relatedSales.forEach((sale) => {
-      // Check if customer already exists in the array
-      const existingEntry = groupedSales[method].find((entry) => entry.customer === transaction.customer_name);
-      
-      if (existingEntry) {
-        existingEntry.amount += sale.total; // Accumulate amount if customer exists
+  // Group transactions by payment method and customer
+  const getTotalsByPaymentMethod = (): TransactionGroup => {
+    const grouped: TransactionGroup = {};
+    filteredTransactions.forEach((transaction) => {
+      const method = paymentMethodsMap[transaction.payment_id] || "Unknown";
+      if (!grouped[method]) grouped[method] = [];
+      const existing = grouped[method].find((entry) => entry.customer === transaction.customer_name);
+      if (existing) {
+        existing.amount += transaction.total_price;
       } else {
-        groupedSales[method].push({
-          customer: transaction.customer_name,
-          amount: sale.total,
-        });
+        grouped[method].push({ customer: transaction.customer_name, amount: transaction.total_price });
       }
     });
-  });
-
-  return groupedSales;
-};
-
-  // Compute total per payment method
-  const computeTotal = (sales: { customer: string; amount: number }[]): number => {
-    return sales.reduce((sum, sale) => sum + sale.amount, 0);
+    return grouped;
   };
 
-  const salesByPaymentMethod = getSalesByPaymentMethod();
+  // Compute total per payment method
+  const computeTotal = (arr: { customer: string; amount: number }[]) => arr.reduce((sum, entry) => sum + entry.amount, 0);
+
+  const totalsByPaymentMethod = getTotalsByPaymentMethod();
 
   return (
     <div className="p-6 space-y-6">
@@ -158,7 +115,7 @@ const getSalesByPaymentMethod = (): SaleGroup => {
       </div>
 
       {/* Report Section */}
-      {Object.keys(salesByPaymentMethod).length === 0 ? (
+      {Object.keys(totalsByPaymentMethod).length === 0 ? (
         <Card className="shadow-lg">
           <CardContent className="p-6">
             <div className="text-center py-8">
@@ -168,13 +125,13 @@ const getSalesByPaymentMethod = (): SaleGroup => {
         </Card>
       ) : (
         <div className="space-y-6">
-          {Object.keys(salesByPaymentMethod).map((method) => (
+          {Object.keys(totalsByPaymentMethod).map((method) => (
             <Card key={method} className="shadow-lg">
               <CardHeader className="bg-gray-50 border-b">
                 <div className="flex justify-between items-center">
                   <CardTitle className="text-xl font-semibold">{method}</CardTitle>
                   <div className="text-lg font-medium">
-                    Total: Rp. {computeTotal(salesByPaymentMethod[method]).toLocaleString("id-ID")}
+                    Total: Rp.{computeTotal(totalsByPaymentMethod[method]).toLocaleString("id-ID")}
                   </div>
                 </div>
               </CardHeader>
@@ -188,11 +145,11 @@ const getSalesByPaymentMethod = (): SaleGroup => {
                       </TableRow>
                     </TableHeader>
                     <TableBody>
-                      {salesByPaymentMethod[method].map((entry, index) => (
+                      {totalsByPaymentMethod[method].map((entry, index) => (
                         <TableRow key={index} className="hover:bg-gray-50">
                           <TableCell className="font-medium">{entry.customer}</TableCell>
                           <TableCell className="text-right font-medium">
-                            Rp. {entry.amount.toLocaleString("id-ID")}
+                            Rp.{entry.amount.toLocaleString("id-ID")}
                           </TableCell>
                         </TableRow>
                       ))}
