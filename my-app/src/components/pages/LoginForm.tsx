@@ -44,8 +44,8 @@ export function LoginForm({ className, ...props }: { className?: string }) {
         const role = result.data?.role;  
       
         setMessage("Login successful!");
-        localStorage.setItem("username", username);
-        localStorage.setItem("role", role);
+        document.cookie = `username=${username}; path=/; max-age=86400`; // 24 hours
+        document.cookie = `role=${role}; path=/; max-age=86400`; // 24 hours
       
         // Route based on role
         if (role === "admin") {

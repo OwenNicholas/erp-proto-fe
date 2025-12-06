@@ -4,7 +4,7 @@ import type { NextRequest } from 'next/server'
 // This function can be marked `async` if using `await` inside
 export function middleware(request: NextRequest) {
   const isAuthenticated = request.cookies.has('username') // Check for username cookie
-  const isLoginPage = request.nextUrl.pathname === '/login'
+  const isLoginPage = request.nextUrl.pathname === '/'
   const isAdminPage = request.nextUrl.pathname.startsWith('/admin')
   const isDashboardPage = request.nextUrl.pathname.startsWith('/dashboard')
 
@@ -20,7 +20,7 @@ export function middleware(request: NextRequest) {
 
   // If not authenticated and trying to access protected routes, redirect to login
   if (!isAuthenticated && !isLoginPage) {
-    return NextResponse.redirect(new URL('/login', request.url))
+    return NextResponse.redirect(new URL('/', request.url))
   }
 
   // Check role-based access
@@ -52,6 +52,6 @@ export const config = {
      * - favicon.ico (favicon file)
      * - login (login page)
      */
-    '/((?!api|_next/static|_next/image|favicon.ico|login).*)',
+    '/((?!api|_next/static|_next/image|favicon.ico|$).*)',
   ],
 } 

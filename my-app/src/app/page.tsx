@@ -1,6 +1,6 @@
 // src/app/page.tsx
 import React from "react";
-import { LoginForm } from "./login";
+import { LoginForm } from "../components/pages/LoginForm";
 
 export default function HomePage() {
   return (

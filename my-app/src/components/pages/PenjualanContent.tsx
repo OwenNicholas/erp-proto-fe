@@ -11,6 +11,8 @@ import {
   TableRow,
 } from "@/components/ui/table";
 
+import { format } from "date-fns";
+
 import {
   Select,
   SelectContent,
@@ -25,6 +27,9 @@ import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { AiOutlinePlus, AiOutlineMinus } from "react-icons/ai";
 import { Dialog, DialogContent, DialogFooter, DialogTitle } from "@/components/ui/dialog";
+import { CalendarIcon } from "lucide-react";
+import { Calendar } from "@/components/ui/calendar";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 
 
 // Define the InventoryItem type
@@ -58,6 +63,7 @@ export default function PenjualanContent({ location }: locations) {
   const [paymentMethod, setPaymentMethod] = useState("");
   const [paymentStatus, setPaymentStatus] = useState("");
   const [customerName, setCustomerName] = useState("");
+  const [saleDate, setSaleDate] = useState<Date>(new Date());
   const [dpAmount, setDpAmount] = useState<number>(0);
 
 
@@ -237,6 +243,7 @@ export default function PenjualanContent({ location }: locations) {
       total_price: totalPrice,
       location: location,
       down_payment: dpAmount,
+      sale_date: format(saleDate, "yyyy-MM-dd"),
     };
     console.log("Payload being sent:", JSON.stringify(payload, null, 2));
 
@@ -249,6 +256,7 @@ export default function PenjualanContent({ location }: locations) {
       if (!response.ok) throw new Error("Failed to process transaction");
       alert("Sale successful!");
       setDiscountType("none");
+      setSaleDate(new Date());
       setInvoices([
         { invoice: "", hargaSatuan: "Rp.0", jumlah: "1", discountPerItem: "0", total: "Rp.0", description: "", stock: "" },
       ]);
@@ -394,7 +402,7 @@ export default function PenjualanContent({ location }: locations) {
             </TableRow>
           </TableFooter>
         </Table>
-        <Button className="mt-4" onClick={handleProceedToPayment}>Proceed to Payment</Button>
+        <Button className="mt-4" onClick={handleProceedToPayment}>Lanjut ke Pembayaran</Button>
 
             {/* Payment Input Dialog */}
         <Dialog open={isPaymentDialogOpen} onOpenChange={setIsPaymentDialogOpen}>
@@ -407,6 +415,30 @@ export default function PenjualanContent({ location }: locations) {
                 value={customerName}
                 onChange={(e) => setCustomerName(e.target.value)}
             />
+
+             {/* Sale Date Calendar Picker */}
+             <div className="mt-2">
+                <label className="block text-sm font-medium mb-1">Tanggal Penjualan</label>
+                <Popover>
+                    <PopoverTrigger asChild>
+                        <Button
+                            variant="outline"
+                            className="w-full justify-start text-left font-normal"
+                        >
+                            <CalendarIcon className="mr-2 h-4 w-4" />
+                            {saleDate ? format(saleDate, "dd/MM/yyyy") : "Pilih tanggal"}
+                        </Button>
+                    </PopoverTrigger>
+                    <PopoverContent className="w-auto p-0" align="start">
+                        <Calendar
+                            mode="single"
+                            selected={saleDate}
+                            onSelect={(date) => date && setSaleDate(date)}
+                            initialFocus
+                        />
+                    </PopoverContent>
+                </Popover>
+            </div>
 
             {/* Payment Method Dropdown */}
             <label className="block text-sm font-medium mt-2">Payment Method</label>

@@ -30,6 +30,16 @@ import {
   TableRow,
 } from "@/components/ui/table";
 
+import {
+  Pagination,
+  PaginationContent,
+  PaginationEllipsis,
+  PaginationItem,
+  PaginationLink,
+  PaginationNext,
+  PaginationPrevious,
+} from "@/components/ui/pagination";
+
 // Define Sales Data Type based on Backend Schema
 export type Sale = {
   sale_id: number;
@@ -50,6 +60,8 @@ export default function TelusuriItemContent() {
   const [columnVisibility, setColumnVisibility] = React.useState<VisibilityState>({});
   const [error, setError] = React.useState<string | null>(null);
   const [discounts, setDiscounts] = React.useState<{ [key: number]: number }>({});
+  const [currentPage, setCurrentPage] = React.useState(1);
+  const itemsPerPage = 50;
 
   // Fetch data from API on mount
   React.useEffect(() => {
@@ -108,6 +120,11 @@ export default function TelusuriItemContent() {
   
     fetchTotalDiscounts();
   }, []); // Runs only once when the component mounts
+
+  React.useEffect(() => {
+    setCurrentPage(1);
+  }, [searchQuery]);
+
   // Filter data based on search query (Item ID)
   const filteredData = React.useMemo(() => {
     return data
@@ -116,6 +133,20 @@ export default function TelusuriItemContent() {
       )
       .sort((a, b) => b.sale_id - a.sale_id); // Sorting in descending order
   }, [data, searchQuery]);
+
+  const totalPages = Math.ceil(filteredData.length / itemsPerPage);
+  const startIndex = (currentPage - 1) * itemsPerPage;
+  const endIndex = startIndex + itemsPerPage;
+  const paginatedData = filteredData.slice(startIndex, endIndex);
+
+  // Generate page numbers for pagination - show all pages
+  const getPageNumbers = () => {
+    const pages: number[] = [];
+    for (let i = 1; i <= totalPages; i++) {
+      pages.push(i);
+    }
+    return pages;
+  };
 
   // Columns Definition
   const columns: ColumnDef<Sale>[] = [
@@ -205,7 +236,7 @@ export default function TelusuriItemContent() {
 
   // Create Table Instance
   const table = useReactTable({
-    data: filteredData, // Uses memoized data
+    data: paginatedData, // Uses memoized data
     columns,
     getCoreRowModel: getCoreRowModel(),
     getPaginationRowModel: getPaginationRowModel(),
@@ -216,7 +247,7 @@ export default function TelusuriItemContent() {
       sorting,
       columnVisibility,
     },
-    initialState: { pagination: { pageSize: 50 } },
+    manualPagination: true,
   });
 
   return (
@@ -296,6 +327,62 @@ export default function TelusuriItemContent() {
             </TableBody>
           </Table>
         </div>
+
+
+
+         {/* Custom Pagination */}
+         {totalPages > 1 && (
+          <div className="flex items-center justify-center py-4">
+            <Pagination>
+              <PaginationContent>
+                <PaginationItem>
+                  <PaginationPrevious
+                    href="#"
+                    onClick={(e) => {
+                      e.preventDefault();
+                      if (currentPage > 1) {
+                        setCurrentPage(currentPage - 1);
+                        window.scrollTo({ top: 0, behavior: "smooth" });
+                      }
+                    }}
+                    className={currentPage === 1 ? "pointer-events-none opacity-50" : "cursor-pointer"}
+                  />
+                </PaginationItem>
+                
+                {getPageNumbers().map((page) => (
+                  <PaginationItem key={page}>
+                    <PaginationLink
+                      href="#"
+                      onClick={(e) => {
+                        e.preventDefault();
+                        setCurrentPage(page);
+                        window.scrollTo({ top: 0, behavior: "smooth" });
+                      }}
+                      isActive={currentPage === page}
+                      className="cursor-pointer"
+                    >
+                    {page}
+                    </PaginationLink>
+                  </PaginationItem>
+                ))}
+                
+                <PaginationItem>
+                  <PaginationNext
+                    href="#"
+                    onClick={(e) => {
+                      e.preventDefault();
+                      if (currentPage < totalPages) {
+                        setCurrentPage(currentPage + 1);
+                        window.scrollTo({ top: 0, behavior: "smooth" });
+                      }
+                    }}
+                    className={currentPage === totalPages ? "pointer-events-none opacity-50" : "cursor-pointer"}
+                  />
+                </PaginationItem>
+              </PaginationContent>
+            </Pagination>
+          </div>
+        )}
       </div>
     </div>
   );
