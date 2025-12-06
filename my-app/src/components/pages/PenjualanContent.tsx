@@ -231,6 +231,14 @@ export default function PenjualanContent({ location }: locations) {
 
     const totalPrice = parsePrice(calculateGrandTotal());
 
+    // Create timestamp from selected date with current time
+    const now = new Date();
+    const saleTimestamp = new Date(saleDate);
+    saleTimestamp.setHours(now.getHours());
+    saleTimestamp.setMinutes(now.getMinutes());
+    saleTimestamp.setSeconds(now.getSeconds());
+    saleTimestamp.setMilliseconds(now.getMilliseconds());
+
     
     const payload = {
       sales: processedInvoices,
@@ -243,7 +251,7 @@ export default function PenjualanContent({ location }: locations) {
       total_price: totalPrice,
       location: location,
       down_payment: dpAmount,
-      sale_date: format(saleDate, "yyyy-MM-dd"),
+      timestamp: saleTimestamp.toISOString(),
     };
     console.log("Payload being sent:", JSON.stringify(payload, null, 2));
 
