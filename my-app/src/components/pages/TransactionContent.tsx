@@ -32,6 +32,16 @@ import {
 
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter, DialogTrigger } from "@/components/ui/dialog";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
 
 import {
   Pagination,
@@ -71,6 +81,10 @@ export default function TransactionHistoryContent() {
   const [isDialogOpen, setIsDialogOpen] = React.useState(false);
   const [selectedTransactionId, setSelectedTransactionId] = React.useState("");
   const [newPaymentStatus, setNewPaymentStatus] = React.useState("");
+
+  const [isDeleteDialogOpen, setIsDeleteDialogOpen] = React.useState(false);
+  const [selectedDeleteTransactionId, setSelectedDeleteTransactionId] = React.useState("");
+  const [showDeleteConfirmation, setShowDeleteConfirmation] = React.useState(false);
 
   const paymentMethodsMap: Record<number, string> = {
     1: "Tunai",
@@ -292,6 +306,44 @@ export default function TransactionHistoryContent() {
     }
   ];
 
+  // Modify this function - split into two functions
+  const handleDeleteClick = () => {
+    if (!selectedDeleteTransactionId) {
+      alert("❌ No. Faktur harus diisi!");
+      return;
+    }
+    setShowDeleteConfirmation(true);
+  };
+
+  const handleDeleteTransaction = async () => {
+    try {
+      const response = await fetch(`http://103.185.52.233:8080/api/transactions/${selectedDeleteTransactionId}`, {
+        method: "DELETE",
+        headers: {
+          "Content-Type": "application/json",
+        },
+      });
+
+      if (!response.ok) {
+        throw new Error("Gagal menghapus transaksi");
+      }
+
+      alert("✅ Transaksi berhasil dihapus!");
+      setIsDeleteDialogOpen(false);
+      setShowDeleteConfirmation(false);
+      setSelectedDeleteTransactionId("");
+
+      // Refresh Data
+      const updatedResponse = await fetch("http://103.185.52.233:8080/api/transactions");
+      const updatedResult = await updatedResponse.json();
+      setData(updatedResult.data);
+    } catch (error) {
+      console.error("Error deleting transaction:", error);
+      alert("❌ Gagal menghapus transaksi. Coba lagi.");
+      setShowDeleteConfirmation(false);
+    }
+  };
+
   const handleUpdatePaymentStatus = async () => {
     if (!selectedTransactionId || !newPaymentStatus) {
       alert("❌ Transaction ID dan Status Pembayaran harus dipilih!");
@@ -347,45 +399,96 @@ export default function TransactionHistoryContent() {
       {/* Header Section */}
       <div className="flex justify-between items-center">
         <h1 className="text-2xl font-bold text-gray-900">History Transaksi</h1>
-        <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
-          <DialogTrigger asChild>
-            <Button variant="outline" className="flex items-center gap-2">
-              <span>Koreksi Status Pembayaran</span>
-            </Button>
-          </DialogTrigger>
-          <DialogContent className="sm:max-w-[425px]">
-            <DialogHeader>
-              <DialogTitle className="text-xl font-semibold">Koreksi Status Pembayaran</DialogTitle>
-            </DialogHeader>
-            <div className="space-y-4 py-4">
-              <div className="space-y-2">
-                <label className="text-sm font-medium">No. Faktur</label>
-                <Input
-                  placeholder="Masukkan No. Faktur"
-                  value={selectedTransactionId}
-                  onChange={(e) => setSelectedTransactionId(e.target.value)}
-                />
+        <div className="flex gap-2">
+          <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
+            <DialogTrigger asChild>
+              <Button variant="outline" className="flex items-center gap-2">
+                <span>Koreksi Status Pembayaran</span>
+              </Button>
+            </DialogTrigger>
+            <DialogContent className="sm:max-w-[425px]">
+              <DialogHeader>
+                <DialogTitle className="text-xl font-semibold">Koreksi Status Pembayaran</DialogTitle>
+              </DialogHeader>
+              <div className="space-y-4 py-4">
+                <div className="space-y-2">
+                  <label className="text-sm font-medium">No. Faktur</label>
+                  <Input
+                    placeholder="Masukkan No. Faktur"
+                    value={selectedTransactionId}
+                    onChange={(e) => setSelectedTransactionId(e.target.value)}
+                  />
+                </div>
+                <div className="space-y-2">
+                  <label className="text-sm font-medium">Status Pembayaran</label>
+                  <Select onValueChange={(value) => setNewPaymentStatus(value)} value={newPaymentStatus}>
+                    <SelectTrigger>
+                      <SelectValue placeholder="Pilih Status Pembayaran" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="lunas">Lunas</SelectItem>
+                      <SelectItem value="belum lunas">Belum Lunas</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
               </div>
-              <div className="space-y-2">
-                <label className="text-sm font-medium">Status Pembayaran</label>
-                <Select onValueChange={(value) => setNewPaymentStatus(value)} value={newPaymentStatus}>
-                  <SelectTrigger>
-                    <SelectValue placeholder="Pilih Status Pembayaran" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="lunas">Lunas</SelectItem>
-                    <SelectItem value="belum lunas">Belum Lunas</SelectItem>
-                  </SelectContent>
-                </Select>
+              <DialogFooter>
+                <Button variant="outline" onClick={() => setIsDialogOpen(false)}>Batal</Button>
+                <Button onClick={handleUpdatePaymentStatus}>Konfirmasi</Button>
+              </DialogFooter>
+            </DialogContent>
+          </Dialog>
+
+          <Dialog open={isDeleteDialogOpen} onOpenChange={setIsDeleteDialogOpen}>
+            <DialogTrigger asChild>
+              <Button variant="outline" className="flex items-center gap-2">
+                <span>Delete Transaksi</span>
+              </Button>
+            </DialogTrigger>
+            <DialogContent className="sm:max-w-[425px]">
+              <DialogHeader>
+                <DialogTitle className="text-xl font-semibold">Delete Transaksi</DialogTitle>
+              </DialogHeader>
+              <div className="space-y-4 py-4">
+                <div className="space-y-2">
+                  <label className="text-sm font-medium">No. Faktur</label>
+                  <Input
+                    placeholder="Masukkan No. Faktur"
+                    value={selectedDeleteTransactionId}
+                    onChange={(e) => setSelectedDeleteTransactionId(e.target.value)}
+                  />
+                </div>
               </div>
-            </div>
-            <DialogFooter>
-              <Button variant="outline" onClick={() => setIsDialogOpen(false)}>Batal</Button>
-              <Button onClick={handleUpdatePaymentStatus}>Konfirmasi</Button>
-            </DialogFooter>
-          </DialogContent>
-        </Dialog>
+              <DialogFooter>
+                <Button variant="outline" onClick={() => setIsDeleteDialogOpen(false)}>Batal</Button>
+                <Button onClick={handleDeleteClick}>Konfirmasi</Button>
+              </DialogFooter>
+            </DialogContent>
+          </Dialog>
+        </div>
       </div>
+
+      {/* AlertDialog for delete confirmation - moved outside header div */}
+      <AlertDialog open={showDeleteConfirmation} onOpenChange={setShowDeleteConfirmation}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Apakah Anda yakin?</AlertDialogTitle>
+            <AlertDialogDescription>
+              Transaksi dengan No. Faktur <strong>{selectedDeleteTransactionId}</strong> akan dihapus secara permanen. 
+              Tindakan ini tidak dapat dibatalkan.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel onClick={() => setShowDeleteConfirmation(false)}>Batal</AlertDialogCancel>
+            <AlertDialogAction 
+              onClick={handleDeleteTransaction}
+              className="bg-red-600 hover:bg-red-700"
+            >
+              Hapus
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
 
       {/* Error Message */}
       {error && (
